@@ -1,0 +1,138 @@
+{
+  "Classical d_rep": {
+    "overall_rho": 0.04844479178185002,
+    "overall_pvalue": 0.33382845379545045,
+    "axis_breakdown": {
+      "background": {
+        "spearman_rho": 0.0,
+        "spearman_pvalue": 1.0,
+        "pearson_r": 0.0,
+        "pearson_pvalue": 1.0,
+        "num_samples": 100
+      },
+      "difficulty": {
+        "spearman_rho": 0.8854759982365611,
+        "spearman_pvalue": 2.1797811197955455e-34,
+        "pearson_r": 0.9979115395862658,
+        "pearson_pvalue": 2.022234695931265e-118,
+        "num_samples": 100
+      },
+      "sprite": {
+        "spearman_rho": 0.8501944510803401,
+        "spearman_pvalue": 4.661968552971924e-29,
+        "pearson_r": 0.9491144960207144,
+        "pearson_pvalue": 5.656708586415109e-51,
+        "num_samples": 100
+      },
+      "wall_texture": {
+        "spearman_rho": 0.0,
+        "spearman_pvalue": 1.0,
+        "pearson_r": 0.0,
+        "pearson_pvalue": 1.0,
+        "num_samples": 100
+      }
+    }
+  },
+  "SegmentationWeighter (GT Mask)": {
+    "overall_rho": 0.5170333233819628,
+    "overall_pvalue": 1.0065275160157065e-28,
+    "axis_breakdown": {
+      "background": {
+        "spearman_rho": 0.0,
+        "spearman_pvalue": 1.0,
+        "pearson_r": 0.0,
+        "pearson_pvalue": 1.0,
+        "num_samples": 100
+      },
+      "difficulty": {
+        "spearman_rho": 0.8854759982365611,
+        "spearman_pvalue": 2.1797811197955455e-34,
+        "pearson_r": 0.9996692238753161,
+        "pearson_pvalue": 1.286718377109374e-157,
+        "num_samples": 100
+      },
+      "sprite": {
+        "spearman_rho": 0.8501944510803401,
+        "spearman_pvalue": 4.661968552971924e-29,
+        "pearson_r": 0.9193014757613057,
+        "pearson_pvalue": 1.7840190797731632e-41,
+        "num_samples": 100
+      },
+      "wall_texture": {
+        "spearman_rho": 0.0,
+        "spearman_pvalue": 1.0,
+        "pearson_r": 0.0,
+        "pearson_pvalue": 1.0,
+        "num_samples": 100
+      }
+    }
+  },
+  "TLDAWeighter (Lipschitz)": {
+    "overall_rho": 0.363985913208891,
+    "overall_pvalue": 5.6343984950006374e-14,
+    "axis_breakdown": {
+      "background": {
+        "spearman_rho": 0.0,
+        "spearman_pvalue": 1.0,
+        "pearson_r": 0.0,
+        "pearson_pvalue": 1.0,
+        "num_samples": 100
+      },
+      "difficulty": {
+        "spearman_rho": 0.8854759982365611,
+        "spearman_pvalue": 2.1797811197955455e-34,
+        "pearson_r": 0.9982853425144912,
+        "pearson_pvalue": 1.2967575066989622e-122,
+        "num_samples": 100
+      },
+      "sprite": {
+        "spearman_rho": 0.8501944510803401,
+        "spearman_pvalue": 4.661968552971924e-29,
+        "pearson_r": 0.9429005874055757,
+        "pearson_pvalue": 1.3779762994081488e-48,
+        "num_samples": 100
+      },
+      "wall_texture": {
+        "spearman_rho": 0.0,
+        "spearman_pvalue": 1.0,
+        "pearson_r": 0.0,
+        "pearson_pvalue": 1.0,
+        "num_samples": 100
+      }
+    }
+  },
+  "SaliencyWeighter (Critic)": {
+    "overall_rho": 0.4350498295972936,
+    "overall_pvalue": 6.686543484634688e-20,
+    "axis_breakdown": {
+      "background": {
+        "spearman_rho": 0.0,
+        "spearman_pvalue": 1.0,
+        "pearson_r": 0.0,
+        "pearson_pvalue": 1.0,
+        "num_samples": 100
+      },
+      "difficulty": {
+        "spearman_rho": 0.8854759982365611,
+        "spearman_pvalue": 2.1797811197955455e-34,
+        "pearson_r": 0.9850824477858081,
+        "pearson_pvalue": 1.0326278120994597e-76,
+        "num_samples": 100
+      },
+      "sprite": {
+        "spearman_rho": 0.8501944510803401,
+        "spearman_pvalue": 4.661968552971924e-29,
+        "pearson_r": 0.9587055955567694,
+        "pearson_pvalue": 2.5604169772041793e-55,
+        "num_samples": 100
+      },
+      "wall_texture": {
+        "spearman_rho": 0.0,
+        "spearman_pvalue": 1.0,
+        "pearson_r": 0.0,
+        "pearson_pvalue": 1.0,
+        "num_samples": 100
+      }
+    }
+  }
+}

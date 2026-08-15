@@ -1,0 +1,18 @@
+{
+  "phase": "phase0_infra",
+  "seed": 42,
+  "n_episodes": 10,
+  "environments": [
+    {
+      "env_id": "visual_pursuit",
+      "perturbation_axis": "photometric",
+      "intensities": [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+    },
+    {
+      "env_id": "procgen_ood",
+      "perturbation_axis": "background",
+      "intensities": [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+    }
+  ],
+  "encoders": ["frozen_resnet18", "end2end_cnn"]
+}

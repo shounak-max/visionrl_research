@@ -1,0 +1,4 @@
+Encoder Regime,k=5 Geodesic Distance,k=10 Geodesic Distance,k=20 Geodesic Distance
+Frozen ResNet-18,2.9963,4.1194,5.7583
+Partial Fine-Tune ResNet-18,2.8769,4.0479,5.6285
+End-to-End CNN,1.9094,2.1237,0.0350

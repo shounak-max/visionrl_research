@@ -1,0 +1,5 @@
+Metric / Weighter Backend,Overall Spearman Rho,Background Shift,Wall Texture Shift,Sprite Shift,Difficulty Shift
+Classical d_rep,0.0484,0.0000,0.0000,0.8502,0.8855
+SegmentationWeighter (GT Mask),0.5170,0.0000,0.0000,0.8502,0.8855
+TLDAWeighter (Lipschitz),0.3640,0.0000,0.0000,0.8502,0.8855
+SaliencyWeighter (Critic),0.4350,0.0000,0.0000,0.8502,0.8855
