@@ -60,13 +60,28 @@ def collect_raw_20_episodes(seed: int = 42):
             if row_id >= 20:
                 break
 
+            ep_seed = seed + row_id
+
+            # 1. Collect clean rollout for this episode seed
+            clean_batch = RolloutCollector.collect(
+                env_id="procgen_ood",
+                policy=policy,
+                perturbation_config=clean_cfg,
+                n_episodes=1,
+                seed=ep_seed,
+            )
+            clean_obs_t = torch.tensor(clean_batch.observations, dtype=torch.float32)
+            clean_spatial_feat = encoder.embed_spatial(clean_obs_t)
+            clean_pooled_emb = encoder.embed(clean_obs_t)
+
+            # 2. Collect perturbed rollout for this episode seed
             pert_cfg = PerturbationConfig(axis=axis, intensity=inst, holdout_split="test")
             pert_batch = RolloutCollector.collect(
                 env_id="procgen_ood",
                 policy=policy,
                 perturbation_config=pert_cfg,
                 n_episodes=1,
-                seed=seed + row_id,
+                seed=ep_seed,
             )
 
             pert_obs_t = torch.tensor(pert_batch.observations, dtype=torch.float32)
@@ -99,7 +114,7 @@ def collect_raw_20_episodes(seed: int = 42):
                 clean_spatial_feat[:min_l], pert_spatial_feat[:min_l], ws_sal
             ).detach().cpu().numpy()
 
-            clean_r = float(np.sum(clean_batch.rewards[clean_batch.episode_ids == 0]))
+            clean_r = float(np.sum(clean_batch.rewards))
             pert_r = float(np.sum(pert_batch.rewards))
             perf_drop = clean_r - pert_r
 

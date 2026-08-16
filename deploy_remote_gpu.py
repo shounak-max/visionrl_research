@@ -11,15 +11,18 @@ except (ImportError, ModuleNotFoundError):
     subprocess.check_call([sys.executable, "-m", "pip", "install", "paramiko"])
     import paramiko
 
-HOST = "10.0.24.7"
-PORT = 2222
-USERNAME = "piyush"
-PASSWORD = "2£K40d#N"
+HOST = os.environ.get("GPU_HOST", "127.0.0.1")
+PORT = int(os.environ.get("GPU_PORT", "22"))
+USERNAME = os.environ.get("GPU_USER", "user")
+PASSWORD = os.environ.get("GPU_PASSWORD", "")
 
-REMOTE_DIR = "/home/piyush/visionrl_research"
+REMOTE_DIR = os.environ.get("GPU_REMOTE_DIR", f"/home/{USERNAME}/visionrl_research")
 LOCAL_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def connect_ssh():
+    if not PASSWORD and not os.environ.get("GPU_KEY_PATH"):
+        print("[WARNING] GPU_PASSWORD or GPU_KEY_PATH not set in environment variables.")
+        print("[INFO] Set GPU_HOST, GPU_PORT, GPU_USER, GPU_PASSWORD environment variables to deploy.")
     print(f"Connecting to GPU server {USERNAME}@{HOST}:{PORT}...")
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())

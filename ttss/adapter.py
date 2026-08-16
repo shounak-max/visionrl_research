@@ -58,8 +58,8 @@ class TTSSAdapter:
         test_mean = torch.mean(embeddings, dim=0)
         test_var = torch.var(embeddings, dim=0, unbiased=False)
 
-        mean_loss = torch.mean((test_mean - self.offline_mean.to(embeddings.device)) ** 2)
-        var_loss = torch.mean((test_var - self.offline_var.to(embeddings.device)) ** 2)
+        mean_loss = torch.sum((test_mean - self.offline_mean.to(embeddings.device)) ** 2)
+        var_loss = torch.sum((test_var - self.offline_var.to(embeddings.device)) ** 2)
 
         return mean_loss + var_loss
 
@@ -97,14 +97,32 @@ class TTSSAdapter:
 
         # 2. Perform candidate self-supervised update on cloned encoder
         candidate_encoder = copy.deepcopy(encoder)
+        
+        # If the candidate encoder has zero trainable parameters, attach an adapter head if supported
+        if not any(p.requires_grad for p in candidate_encoder.parameters()):
+            if hasattr(candidate_encoder, "attach_adapter"):
+                candidate_encoder.attach_adapter()
+            else:
+                elapsed_ms = (time.perf_counter() - start_time) * 1000.0
+                step_log = {
+                    "loss_before": float(loss_total_before.item()),
+                    "loss_after": float(loss_total_before.item()),
+                    "accepted": False,
+                    "status": "no_trainable_parameters",
+                    "latency_ms": float(elapsed_ms),
+                }
+                self.logs.append(step_log)
+                return encoder, step_log
+
         candidate_encoder.train()
+        trainable_params = [p for p in candidate_encoder.parameters() if p.requires_grad]
         optimizer = torch.optim.SGD(
-            [p for p in candidate_encoder.parameters() if p.requires_grad],
+            trainable_params,
             lr=self.lr,
             momentum=0.5,
         )
 
-        if any(p.requires_grad for p in candidate_encoder.parameters()):
+        for _ in range(2):
             optimizer.zero_grad()
             c_loss_local = self.local_consistency_loss(candidate_encoder, obs_window)
             c_loss_moment = self.moment_matching_loss(candidate_encoder, obs_window)
@@ -126,8 +144,8 @@ class TTSSAdapter:
         elapsed_ms = (time.perf_counter() - start_time) * 1000.0
 
         # 4. TRUST-REGION REJECTION SAFEGUARD
-        # Accept update ONLY if candidate loss is improved (or if force_accept)
-        accepted = (loss_total_after.item() < loss_total_before.item() + 1e-4) or force_accept
+        # Accept update ONLY if candidate loss is strictly improved (or if force_accept)
+        accepted = (loss_total_after.item() < loss_total_before.item()) or force_accept
 
         step_log = {
             "loss_before": float(loss_total_before.item()),

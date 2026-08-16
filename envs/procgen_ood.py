@@ -25,6 +25,7 @@ class ProcgenOODEnv(BaseVisualEnvironment):
         seed: int = 42,
         perturbation_config: Optional[PerturbationConfig] = None,
         image_shape: Tuple[int, int, int] = (64, 64, 3),
+        use_procgen_gym: Optional[bool] = None,
     ):
         if perturbation_config is None:
             perturbation_config = PerturbationConfig(
@@ -43,7 +44,9 @@ class ProcgenOODEnv(BaseVisualEnvironment):
             seed=seed,
             perturbation_config=self.perturbation_config,
             image_shape=image_shape,
+            use_procgen_gym=use_procgen_gym,
         )
+        self.backend_mode = self._inner_env.backend_mode
 
     @property
     def action_space_dim(self) -> int:

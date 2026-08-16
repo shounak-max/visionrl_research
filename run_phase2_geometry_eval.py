@@ -36,13 +36,35 @@ def evaluate_phase2_geometry(
 
     policy = CoinRunBaselinePolicy()
 
+    # Load or train End-to-End CNN with DrQ-v2
+    cnn_encoder = EndToEndCNNEncoder(embedding_dim=512)
+    checkpoint_path = "checkpoints/drq2_cnn_encoder.pt"
+    if os.path.exists(checkpoint_path):
+        try:
+            ckpt = torch.load(checkpoint_path, map_location="cpu")
+            if "encoder_state_dict" in ckpt:
+                cnn_encoder.load_state_dict(ckpt["encoder_state_dict"])
+                print(f"[INFO] Loaded trained DrQ-v2 CNN encoder checkpoint from '{checkpoint_path}'.")
+            elif "state_dict" in ckpt:
+                cnn_encoder.load_state_dict({k.replace("encoder.", ""): v for k, v in ckpt["state_dict"].items() if k.startswith("encoder.")})
+                print(f"[INFO] Loaded trained DrQ-v2 CNN encoder from '{checkpoint_path}'.")
+        except Exception as e:
+            print(f"[WARNING] Could not load checkpoint ({e}), proceeding with standard initialization.")
+    else:
+        print("[INFO] No trained DrQ-v2 checkpoint found; training DrQ-v2 encoder for valid representation comparison...")
+        from train_rl_policy import train_policy
+        train_policy(env_name="procgen_ood", total_steps=200, checkpoint_path=checkpoint_path, seed=seed)
+        ckpt = torch.load(checkpoint_path, map_location="cpu")
+        if "encoder_state_dict" in ckpt:
+            cnn_encoder.load_state_dict(ckpt["encoder_state_dict"])
+
     # Three encoder fine-tuning regimes
     encoders = {
         "Frozen ResNet-18": FrozenResNet18Encoder(embedding_dim=512),
         "Partial Fine-Tune ResNet-18": PartialFineTuneResNet18Encoder(
             embedding_dim=512
         ),
-        "End-to-End CNN": EndToEndCNNEncoder(embedding_dim=512),
+        "End-to-End CNN (DrQ-v2 Trained)": cnn_encoder,
     }
 
     # Collect clean baseline rollout trajectory

@@ -1,10 +1,4 @@
-"""
-Procgen CoinRun environment implementation with asset tracking and ground-truth mask support.
-
-Supports live gym/procgen bindings when available, with a high-fidelity synthetic fallback
-for fast offline testing and non-C-API platform execution.
-"""
-
+import os
 from typing import Any, Dict, Optional, Tuple
 import numpy as np
 
@@ -14,8 +8,8 @@ from envs.base_env import BaseVisualEnvironment, PerturbationConfig
 class ProcgenCoinRunEnv(BaseVisualEnvironment):
     """Procgen CoinRun environment wrapper.
 
-    Provides observations [64, 64, 3] in uint8 or float32 [0, 1] format,
-    and returns asset ground-truth hazard/entity mask [64, 64] (float32 [0.0, 1.0]).
+    Supports live Gym Procgen bindings (when use_procgen_gym=True or USE_PROCGEN_GYM=1 in env),
+    and high-fidelity synthetic fallback with full control over 4 holdout perturbation axes.
     """
 
     def __init__(
@@ -23,7 +17,7 @@ class ProcgenCoinRunEnv(BaseVisualEnvironment):
         seed: int = 42,
         perturbation_config: Optional[PerturbationConfig] = None,
         image_shape: Tuple[int, int, int] = (64, 64, 3),
-        use_procgen_gym: bool = False,
+        use_procgen_gym: Optional[bool] = None,
     ):
         super().__init__(
             env_id="coinrun",
@@ -31,9 +25,14 @@ class ProcgenCoinRunEnv(BaseVisualEnvironment):
             perturbation_config=perturbation_config,
             image_shape=image_shape,
         )
+        if use_procgen_gym is None:
+            # Check environment variable default
+            use_procgen_gym = os.environ.get("USE_PROCGEN_GYM", "0").lower() in ["1", "true", "yes"]
+
         self.use_procgen_gym = use_procgen_gym
         self.gym_env = None
         self._rng = np.random.RandomState(seed)
+        self.backend_mode = "synthetic_coinrun"
 
         if self.use_procgen_gym:
             try:
@@ -43,11 +42,14 @@ class ProcgenCoinRunEnv(BaseVisualEnvironment):
                 self.gym_env = gym.make(
                     "procgen:procgen-coinrun-v0", start_level=seed, num_levels=100
                 )
+                self.backend_mode = "real_procgen_gym"
+                print(f"[ProcgenCoinRunEnv] Initialized REAL Procgen C-API Gym environment (start_level={seed}).")
             except Exception as e:
                 print(
-                    f"[Warning] Procgen C API loading failed ({e}). Falling back to synthetic CoinRun simulation."
+                    f"[ProcgenCoinRunEnv Warning] Real Procgen loading failed ({e}). Using synthetic CoinRun simulation."
                 )
                 self.use_procgen_gym = False
+                self.backend_mode = "synthetic_coinrun"
 
         # State tracking for internal simulator fallback
         self.max_steps = 100
@@ -74,17 +76,19 @@ class ProcgenCoinRunEnv(BaseVisualEnvironment):
             return obs, {"ground_truth_mask": mask}
 
         # Synthetic Procgen CoinRun generation
-        self.player_pos = np.array([10.0, 10.0]) + self._rng.uniform(
-            -0.5, 0.5, size=2
-        )
-        self.player_pos[1] = 10.0
+        if seed is not None:
+            self._rng = np.random.RandomState(seed)
+            self._episode_seed = int(seed)
+        else:
+            self._episode_seed = int(self._rng.randint(0, 100000))
+
+        # Seed-dependent level geometry
+        seed_offset = float((self._episode_seed % 7) * 1.5)
+        self.player_pos = np.array([8.0 + float(self._episode_seed % 3) * 0.5, 10.0])
         self.player_vy = 0.0
         self.is_jumping = False
-        self.coin_pos = np.array([54.0, 10.0])
-        self.hazard_pos = np.array([32.0, 10.0]) + self._rng.uniform(
-            -1.0, 1.0, size=2
-        )
-        self.hazard_pos[1] = 10.0
+        self.hazard_pos = np.array([28.0 + seed_offset, 10.0])
+        self.coin_pos = np.array([52.0 + float(self._episode_seed % 4) * 1.0, 10.0])
 
         obs, mask = self._generate_synthetic_obs_and_mask()
         return obs, {"ground_truth_mask": mask}
@@ -137,11 +141,12 @@ class ProcgenCoinRunEnv(BaseVisualEnvironment):
                 reward = 0.0
                 terminated = True
 
-        # Secondary hazard check for difficulty axis
-        if self.perturbation_config.axis == "difficulty" and self.perturbation_config.intensity > 0.3:
-            h2_pos = np.array([44.0, 10.0])
-            dist_h2 = np.linalg.norm(self.player_pos - h2_pos)
-            if dist_h2 < 3.5 and self.player_pos[1] < 14.0:
+        # Secondary hazard check for difficulty axis scaling smoothly with intensity
+        if self.perturbation_config.axis == "difficulty" and self.perturbation_config.intensity > 0.2:
+            h2_x = 40.0 + 8.0 * (1.0 - self.perturbation_config.intensity)
+            dist_h2 = np.linalg.norm(self.player_pos - np.array([h2_x, 10.0]))
+            coll_radius = 2.5 + 2.0 * self.perturbation_config.intensity
+            if dist_h2 < coll_radius and self.player_pos[1] < 14.0:
                 reward = 0.0
                 terminated = True
 
@@ -174,12 +179,13 @@ class ProcgenCoinRunEnv(BaseVisualEnvironment):
         intensity = self.perturbation_config.intensity
 
         if axis == "background":
+            freq = 2.0 + 3.0 * intensity
             bg_pattern = (
-                np.sin(np.linspace(0, 4 * np.pi, W))
+                np.sin(np.linspace(0, freq * np.pi, W))
                 .reshape(1, W, 1)
                 .repeat(H, axis=0)
             )
-            obs += bg_pattern * intensity * 0.4
+            obs += bg_pattern * (0.2 + 0.3 * intensity)
         elif axis == "wall_texture":
             noise = (
                 self._rng.uniform(-0.35, 0.35, size=(H, W, C))
@@ -194,9 +200,9 @@ class ProcgenCoinRunEnv(BaseVisualEnvironment):
 
         if axis == "sprite":
             # Sprite shift modulates hue, brightness and contrast of entities
-            hazard_color = [max(0.0, 1.0 - 0.75 * intensity), 0.4 * intensity, 0.4 * intensity]
-            player_color = [0.4 * intensity, max(0.0, 1.0 - 0.5 * intensity), 0.3 * intensity]
-            coin_color = [max(0.0, 1.0 - 0.3 * intensity), max(0.0, 1.0 - 0.3 * intensity), 0.5 * intensity]
+            hazard_color = [max(0.05, 1.0 - 0.75 * intensity), 0.45 * intensity, 0.45 * intensity]
+            player_color = [0.4 * intensity, max(0.05, 1.0 - 0.5 * intensity), 0.3 * intensity]
+            coin_color = [max(0.1, 1.0 - 0.3 * intensity), max(0.1, 1.0 - 0.3 * intensity), 0.5 * intensity]
 
         # Draw Player (Green box near player_pos)
         px, py = int(np.clip(self.player_pos[0], 2, W - 3)), int(np.clip(self.player_pos[1], 2, H - 3))
@@ -212,11 +218,12 @@ class ProcgenCoinRunEnv(BaseVisualEnvironment):
         obs[hy_slice, hx_slice] = hazard_color
         mask[hy_slice, hx_slice] = 1.0  # Hazard is decision-critical!
 
-        # Draw Secondary Hazard for difficulty axis if present
-        if axis == "difficulty" and intensity > 0.3:
-            h2x, h2y = 44, 10
-            h2x_slice = slice(max(0, h2x - 2), min(W, h2x + 3))
-            h2y_slice = slice(max(0, h2y - 2), min(H, h2y + 3))
+        # Draw Secondary Hazard for difficulty axis scaling smoothly with intensity
+        if axis == "difficulty" and intensity > 0.2:
+            h2x = int(40 + 8 * (1.0 - intensity))
+            h2_width = int(np.clip(1 + int(4 * intensity), 1, 5))
+            h2x_slice = slice(max(0, h2x - h2_width), min(W, h2x + h2_width + 1))
+            h2y_slice = slice(max(0, 10 - 2), min(H, 10 + 3))
             obs[h2y_slice, h2x_slice] = hazard_color
             mask[h2y_slice, h2x_slice] = 1.0
 

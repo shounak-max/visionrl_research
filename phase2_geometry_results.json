@@ -1,0 +1,62 @@
+{
+  "Frozen ResNet-18": {
+    "k=5": {
+      "geodesic_distance": 1.9368070363998413,
+      "projection_distance": 1.6666438579559326,
+      "max_principal_angle_rad": 1.0803234577178955,
+      "max_principal_angle_deg": 61.89797463621525
+    },
+    "k=10": {
+      "geodesic_distance": 2.741391897201538,
+      "projection_distance": 2.3116753101348877,
+      "max_principal_angle_rad": 1.3343950510025024,
+      "max_principal_angle_deg": 76.45520462558763
+    },
+    "k=20": {
+      "geodesic_distance": 3.8168258666992188,
+      "projection_distance": 3.225766658782959,
+      "max_principal_angle_rad": 1.3854292631149292,
+      "max_principal_angle_deg": 79.3792495904051
+    }
+  },
+  "Partial Fine-Tune ResNet-18": {
+    "k=5": {
+      "geodesic_distance": 2.1734676361083984,
+      "projection_distance": 1.8012542724609375,
+      "max_principal_angle_rad": 1.2624807357788086,
+      "max_principal_angle_deg": 72.33481787669656
+    },
+    "k=10": {
+      "geodesic_distance": 3.214393138885498,
+      "projection_distance": 2.5990524291992188,
+      "max_principal_angle_rad": 1.394233226776123,
+      "max_principal_angle_deg": 79.88367955117805
+    },
+    "k=20": {
+      "geodesic_distance": 4.598989486694336,
+      "projection_distance": 3.6986451148986816,
+      "max_principal_angle_rad": 1.4071757793426514,
+      "max_principal_angle_deg": 80.62523318936634
+    }
+  },
+  "End-to-End CNN (DrQ-v2 Trained)": {
+    "k=5": {
+      "geodesic_distance": 0.8923373222351074,
+      "projection_distance": 0.8247674703598022,
+      "max_principal_angle_rad": 0.7583202123641968,
+      "max_principal_angle_deg": 43.44854768793278
+    },
+    "k=10": {
+      "geodesic_distance": 2.7449891567230225,
+      "projection_distance": 2.004645824432373,
+      "max_principal_angle_rad": 1.547053337097168,
+      "max_principal_angle_deg": 88.63962689729756
+    },
+    "k=20": {
+      "geodesic_distance": 4.151661396026611,
+      "projection_distance": 3.074186325073242,
+      "max_principal_angle_rad": 1.5689741373062134,
+      "max_principal_angle_deg": 89.89559623282535
+    }
+  }
+}

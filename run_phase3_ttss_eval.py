@@ -56,10 +56,10 @@ def evaluate_phase3_ttss(
     OfflineFeatureSummarizer.save_stats(offline_stats, seed=seed)
     print(f"Offline feature mean vector shape: {offline_stats['mean'].shape}")
 
-    # Step 2: Benchmark un-adapted baseline under severe camera noise shift
+    # Step 2: Benchmark un-adapted baseline under severe visual shift
     print("\n[Step 2] Evaluating un-adapted baseline under severe visual shift...")
-    policy = VisualPursuitExpertPolicy(offline_mean=offline_stats["mean"])
-    severe_cfg = PerturbationConfig(axis="camera_noise", intensity=0.9)
+    policy = VisualPursuitExpertPolicy()
+    severe_cfg = PerturbationConfig(axis="severe_shift", intensity=0.9)
     test_env = VisualPursuitEnv(seed=seed + 100, perturbation_config=severe_cfg)
 
     unadapted_errors = []
@@ -90,8 +90,8 @@ def evaluate_phase3_ttss(
         offline_mean=offline_stats["mean"],
         offline_var=offline_stats["var_diag"],
         window_size=16,
-        lr=0.1,
-        moment_weight=0.1,
+        lr=0.20,
+        moment_weight=0.0,
     )
     test_env = VisualPursuitEnv(seed=seed + 100, perturbation_config=severe_cfg)
     naive_errors = []
@@ -135,8 +135,8 @@ def evaluate_phase3_ttss(
         offline_mean=offline_stats["mean"],
         offline_var=offline_stats["var_diag"],
         window_size=16,
-        lr=1e-2,
-        moment_weight=2.0,
+        lr=0.03,
+        moment_weight=1.0,
     )
     test_env = VisualPursuitEnv(seed=seed + 100, perturbation_config=severe_cfg)
     safe_errors = []

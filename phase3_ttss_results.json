@@ -1,0 +1,18 @@
+{
+  "unadapted_baseline": {
+    "mean_tracking_error_px": 25.76905370421779,
+    "floor_collapse_rate": 1.0
+  },
+  "naive_ttt": {
+    "mean_tracking_error_px": 25.769043662084567,
+    "floor_collapse_rate": 1.0,
+    "trust_region_acceptance_rate": 1.0,
+    "avg_latency_ms": 93.06354880000015
+  },
+  "safeguarded_ttss": {
+    "mean_tracking_error_px": 21.234560182863078,
+    "floor_collapse_rate": 0.95,
+    "trust_region_acceptance_rate": 1.0,
+    "avg_latency_ms": 97.26439829999994
+  }
+}

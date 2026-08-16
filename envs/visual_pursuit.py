@@ -147,5 +147,13 @@ class VisualPursuitEnv(BaseVisualEnvironment):
             intensity = self.perturbation_config.intensity
             noise = self._rng.normal(0.0, 0.25 * intensity, size=(H, W, C))
             obs = np.clip(obs + noise, 0.0, 1.0)
+        elif self.perturbation_config.axis == "severe_shift":
+            intensity = self.perturbation_config.intensity
+            # Color inversion, contrast reduction, and out-of-distribution camera noise
+            contrast = max(0.05, 1.0 - 0.75 * intensity)
+            obs = 1.0 - obs
+            obs = np.clip(0.5 + (obs - 0.5) * contrast, 0.0, 1.0)
+            noise = self._rng.normal(0.0, 0.25 * intensity, size=(H, W, C))
+            obs = np.clip(obs + noise, 0.0, 1.0)
 
         return obs.astype(np.float32)

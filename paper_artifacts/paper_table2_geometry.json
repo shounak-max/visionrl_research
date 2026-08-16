@@ -1,62 +1,62 @@
 {
   "Frozen ResNet-18": {
     "k=5": {
-      "geodesic_distance": 2.9963340759277344,
-      "projection_distance": 2.155644416809082,
-      "max_principal_angle_rad": 1.4983203411102295,
-      "max_principal_angle_deg": 85.847431904218
+      "geodesic_distance": 2.973477363586426,
+      "projection_distance": 2.1428370475769043,
+      "max_principal_angle_rad": 1.5068118572235107,
+      "max_principal_angle_deg": 86.33395993917635
     },
     "k=10": {
-      "geodesic_distance": 4.119392395019531,
-      "projection_distance": 2.9952943325042725,
-      "max_principal_angle_rad": 1.5445228815078735,
-      "max_principal_angle_deg": 88.4946424717857
+      "geodesic_distance": 4.2021379470825195,
+      "projection_distance": 3.011507034301758,
+      "max_principal_angle_rad": 1.5567411184310913,
+      "max_principal_angle_deg": 89.19469588057699
     },
     "k=20": {
-      "geodesic_distance": 5.758302688598633,
-      "projection_distance": 4.205303192138672,
-      "max_principal_angle_rad": 1.554124355316162,
-      "max_principal_angle_deg": 89.04476639810603
+      "geodesic_distance": 5.720760822296143,
+      "projection_distance": 4.18449068069458,
+      "max_principal_angle_rad": 1.5597010850906372,
+      "max_principal_angle_deg": 89.3642894776684
     }
   },
   "Partial Fine-Tune ResNet-18": {
     "k=5": {
-      "geodesic_distance": 2.8768670558929443,
-      "projection_distance": 2.0947725772857666,
-      "max_principal_angle_rad": 1.488443374633789,
-      "max_principal_angle_deg": 85.28152341072577
+      "geodesic_distance": 2.836984157562256,
+      "projection_distance": 2.0570194721221924,
+      "max_principal_angle_rad": 1.4842655658721924,
+      "max_principal_angle_deg": 85.0421526010735
     },
     "k=10": {
-      "geodesic_distance": 4.047884464263916,
-      "projection_distance": 2.9498345851898193,
-      "max_principal_angle_rad": 1.5467791557312012,
-      "max_principal_angle_deg": 88.62391746220653
+      "geodesic_distance": 4.072067737579346,
+      "projection_distance": 2.9444310665130615,
+      "max_principal_angle_rad": 1.5435751676559448,
+      "max_principal_angle_deg": 88.4403424678841
     },
     "k=20": {
-      "geodesic_distance": 5.628456115722656,
-      "projection_distance": 4.124571323394775,
-      "max_principal_angle_rad": 1.557294487953186,
-      "max_principal_angle_deg": 89.22640161870419
+      "geodesic_distance": 5.433293342590332,
+      "projection_distance": 4.060081481933594,
+      "max_principal_angle_rad": 1.5523152351379395,
+      "max_principal_angle_deg": 88.94111144726192
     }
   },
   "End-to-End CNN": {
     "k=5": {
-      "geodesic_distance": 1.9093706607818604,
-      "projection_distance": 1.4291960000991821,
-      "max_principal_angle_rad": 1.5294015407562256,
-      "max_principal_angle_deg": 87.6282534661371
+      "geodesic_distance": 1.9255160093307495,
+      "projection_distance": 1.5139840841293335,
+      "max_principal_angle_rad": 1.3605148792266846,
+      "max_principal_angle_deg": 77.95176054443995
     },
     "k=10": {
-      "geodesic_distance": 2.123720407485962,
-      "projection_distance": 1.714066505432129,
-      "max_principal_angle_rad": 1.275068998336792,
-      "max_principal_angle_deg": 73.05607219267156
+      "geodesic_distance": 2.229731798171997,
+      "projection_distance": 1.6689784526824951,
+      "max_principal_angle_rad": 1.5677613019943237,
+      "max_principal_angle_deg": 89.82610588820964
     },
     "k=20": {
-      "geodesic_distance": 0.03498136252164841,
-      "projection_distance": 0.03497549518942833,
-      "max_principal_angle_rad": 0.03328004106879234,
-      "max_principal_angle_deg": 1.9068058952638507
+      "geodesic_distance": 1.5401859283447266,
+      "projection_distance": 0.9995492100715637,
+      "max_principal_angle_rad": 1.5401742458343506,
+      "max_principal_angle_deg": 88.2454840010528
     }
   }
 }

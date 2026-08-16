@@ -6,9 +6,31 @@ Every encoder provides:
 2. `embed_spatial(obs)` -> `[B, C_spatial, H_spatial, W_spatial]` pre-GAP spatial feature map.
 """
 
-from typing import Tuple
+from typing import Optional, Tuple
 import torch
 import torch.nn as nn
+
+
+class ResidualAdapterHead(nn.Module):
+    """Lightweight residual adapter head for test-time adaptation of frozen encoders (VPTTA / Continual TTA style).
+
+    Applies residual transformation: f(z) = z + MLP(z), initialized to identity transform.
+    """
+
+    def __init__(self, feature_dim: int = 512, hidden_dim: int = 128):
+        super().__init__()
+        self.feature_dim = feature_dim
+        self.hidden_dim = hidden_dim
+        self.down = nn.Linear(feature_dim, hidden_dim)
+        self.act = nn.ReLU()
+        self.up = nn.Linear(hidden_dim, feature_dim)
+
+        # Initialize to near-identity so adaptation starts from unmodified backbone features
+        nn.init.zeros_(self.up.weight)
+        nn.init.zeros_(self.up.bias)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return x + self.up(self.act(self.down(x)))
 
 
 class BaseEncoder(nn.Module):
@@ -18,6 +40,19 @@ class BaseEncoder(nn.Module):
         super().__init__()
         self.embedding_dim = embedding_dim
         self.encoder_id = encoder_id
+        self.adapter_head: Optional[nn.Module] = None
+
+    def attach_adapter(self, adapter: Optional[nn.Module] = None) -> nn.Module:
+        """Attaches a trainable adapter head for test-time adaptation."""
+        if adapter is None:
+            self.adapter_head = ResidualAdapterHead(feature_dim=self.embedding_dim)
+        else:
+            self.adapter_head = adapter
+        return self.adapter_head
+
+    def has_trainable_params(self) -> bool:
+        """Returns True if any parameter (trunk or adapter) requires gradients."""
+        return any(p.requires_grad for p in self.parameters())
 
     def forward(self, obs: torch.Tensor) -> torch.Tensor:
         """Alias for embed(obs)."""

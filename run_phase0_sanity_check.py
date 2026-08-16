@@ -45,7 +45,7 @@ def evaluate_tracking_correlation(
     clean_perf = clean_batch.rewards  # reward = -tracking_error_px
 
     d_rep_list = []
-    perf_drop_list = []
+    pert_ret_list = []
 
     # Sweep photometric intensities
     intensities = [0.2, 0.4, 0.6, 0.8, 1.0]
@@ -60,21 +60,17 @@ def evaluate_tracking_correlation(
         )
         pert_obs_t = torch.tensor(pert_batch.observations, dtype=torch.float32)
         pert_emb = encoder.embed(pert_obs_t)
-        pert_perf = pert_batch.rewards
+        pert_perf = pert_batch.rewards  # return R_pert = -tracking_error_px
 
         # Calculate elementwise d_rep L2 distance
         d_rep_vals = DistanceEngine.d_rep(clean_emb, pert_emb).numpy()
 
-        # Performance drop: clean reward - perturbed reward
-        # (higher drop means worse tracking performance under perturbation)
-        perf_drops = clean_perf - pert_perf
-
         d_rep_list.extend(d_rep_vals.tolist())
-        perf_drop_list.extend(perf_drops.tolist())
+        pert_ret_list.extend(pert_perf.tolist())
 
     result = EvaluationEngine.correlate(
         distance_metric=d_rep_list,
-        performance_drop=perf_drop_list,
+        performance_drop=pert_ret_list,
         metric_name="d_rep_visual_pursuit",
     )
 
@@ -104,7 +100,6 @@ def evaluate_coinrun_correlation(
 
     clean_obs_t = torch.tensor(clean_batch.observations, dtype=torch.float32)
     clean_emb = encoder.embed(clean_obs_t)
-    clean_perf = clean_batch.rewards
 
     d_rep_list = []
     perf_drop_list = []
@@ -112,36 +107,37 @@ def evaluate_coinrun_correlation(
 
     # Sweep holdout axes (background shift vs wall_texture vs sprite)
     for axis in ["background", "wall_texture", "sprite"]:
-        for inst in [0.3, 0.6, 0.9]:
+        for inst_idx, inst in enumerate([0.3, 0.6, 0.9]):
             pert_cfg = PerturbationConfig(
                 axis=axis, intensity=inst, holdout_split="test"
             )
-            pert_batch = RolloutCollector.collect(
-                env_id="procgen_ood",
-                policy=policy,
-                perturbation_config=pert_cfg,
-                n_episodes=n_episodes,
-                seed=seed,
-            )
-            pert_obs_t = torch.tensor(pert_batch.observations, dtype=torch.float32)
             for ep in range(n_episodes):
-                clean_indices = np.where(clean_batch.episode_ids == ep)[0]
-                pert_indices = np.where(pert_batch.episode_ids == ep)[0]
+                ep_seed = seed + ep * 13 + inst_idx * 7
+                clean_batch_ep = RolloutCollector.collect(
+                    env_id="procgen_ood",
+                    policy=policy,
+                    perturbation_config=clean_cfg,
+                    n_episodes=1,
+                    seed=ep_seed,
+                )
+                pert_batch_ep = RolloutCollector.collect(
+                    env_id="procgen_ood",
+                    policy=policy,
+                    perturbation_config=pert_cfg,
+                    n_episodes=1,
+                    seed=ep_seed,
+                )
 
-                if len(clean_indices) == 0 or len(pert_indices) == 0:
-                    continue
+                c_obs = torch.tensor(clean_batch_ep.observations, dtype=torch.float32)
+                p_obs = torch.tensor(pert_batch_ep.observations, dtype=torch.float32)
+                min_len = min(len(c_obs), len(p_obs))
 
-                min_len = min(len(clean_indices), len(pert_indices))
-                c_obs = clean_obs_t[clean_indices[:min_len]]
-                p_obs = pert_obs_t[pert_indices[:min_len]]
-
-                c_emb = encoder.embed(c_obs)
-                p_emb = encoder.embed(p_obs)
+                c_emb = encoder.embed(c_obs[:min_len])
+                p_emb = encoder.embed(p_obs[:min_len])
 
                 d_rep_ep = float(torch.mean(DistanceEngine.d_rep(c_emb, p_emb)).item())
-
-                clean_ret = float(np.sum(clean_batch.rewards[clean_indices]))
-                pert_ret = float(np.sum(pert_batch.rewards[pert_indices]))
+                clean_ret = float(np.sum(clean_batch_ep.rewards))
+                pert_ret = float(np.sum(pert_batch_ep.rewards))
                 perf_drop = clean_ret - pert_ret
 
                 d_rep_list.append(d_rep_ep)

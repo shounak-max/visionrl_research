@@ -1,15 +1,15 @@
 {
   "visual_pursuit": {
-    "pearson_r": 0.33376932805219955,
-    "pearson_pvalue": 4.0856379504815894e-66,
-    "spearman_rho": 0.37957047362005114,
+    "pearson_r": -0.8852575629563043,
+    "pearson_pvalue": 0.0,
+    "spearman_rho": -0.6592285301748524,
     "target_pearson_r": -0.8099,
     "num_samples": 2500
   },
   "procgen_coinrun": {
-    "spearman_rho": -0.1722432045654845,
-    "spearman_pvalue": 0.25788294336572176,
-    "pearson_r": -0.38150255745912576,
+    "spearman_rho": -0.11433775636089885,
+    "spearman_pvalue": 0.45453542641874944,
+    "pearson_r": -0.1999365827094481,
     "target_spearman_rho": -0.1094,
     "num_samples": 45,
     "axis_breakdown": {
@@ -21,17 +21,17 @@
         "num_samples": 15
       },
       "sprite": {
-        "spearman_rho": 0.822736474734897,
-        "spearman_pvalue": 0.00016562302099505693,
-        "pearson_r": 0.9584131025969387,
-        "pearson_pvalue": 1.875564997865643e-08,
+        "spearman_rho": 0.27235238970096104,
+        "spearman_pvalue": 0.3260804332468775,
+        "pearson_r": 0.27838361731123984,
+        "pearson_pvalue": 0.31504947095910085,
         "num_samples": 15
       },
       "wall_texture": {
-        "spearman_rho": 0.0,
-        "spearman_pvalue": 1.0,
-        "pearson_r": 0.0,
-        "pearson_pvalue": 1.0,
+        "spearman_rho": 0.07715167498104596,
+        "spearman_pvalue": 0.7846294104066152,
+        "pearson_r": 0.039687305994007105,
+        "pearson_pvalue": 0.8883222937900525,
         "num_samples": 15
       }
     }

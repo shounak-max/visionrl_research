@@ -1,7 +1,7 @@
 {
   "Classical d_rep": {
-    "overall_rho": 0.04844479178185002,
-    "overall_pvalue": 0.33382845379545045,
+    "overall_rho": 0.09258387157346824,
+    "overall_pvalue": 0.06433408659689513,
     "axis_breakdown": {
       "background": {
         "spearman_rho": 0.0,
@@ -11,31 +11,31 @@
         "num_samples": 100
       },
       "difficulty": {
-        "spearman_rho": 0.8854759982365611,
-        "spearman_pvalue": 2.1797811197955455e-34,
-        "pearson_r": 0.9979115395862658,
-        "pearson_pvalue": 2.022234695931265e-118,
+        "spearman_rho": -0.07455340854047131,
+        "spearman_pvalue": 0.4610082318467663,
+        "pearson_r": -0.0329314637934694,
+        "pearson_pvalue": 0.7449823515713417,
         "num_samples": 100
       },
       "sprite": {
-        "spearman_rho": 0.8501944510803401,
-        "spearman_pvalue": 4.661968552971924e-29,
-        "pearson_r": 0.9491144960207144,
-        "pearson_pvalue": 5.656708586415109e-51,
+        "spearman_rho": 0.033400923440989765,
+        "spearman_pvalue": 0.7414740262777554,
+        "pearson_r": 0.2073266656476168,
+        "pearson_pvalue": 0.038476080556660075,
         "num_samples": 100
       },
       "wall_texture": {
-        "spearman_rho": 0.0,
-        "spearman_pvalue": 1.0,
-        "pearson_r": 0.0,
-        "pearson_pvalue": 1.0,
+        "spearman_rho": 0.036182726270764486,
+        "spearman_pvalue": 0.7207959222958419,
+        "pearson_r": 0.008544008895550143,
+        "pearson_pvalue": 0.9327643069885003,
         "num_samples": 100
       }
     }
   },
   "SegmentationWeighter (GT Mask)": {
-    "overall_rho": 0.5170333233819628,
-    "overall_pvalue": 1.0065275160157065e-28,
+    "overall_rho": 0.10753935343152494,
+    "overall_pvalue": 0.031531850711090804,
     "axis_breakdown": {
       "background": {
         "spearman_rho": 0.0,
@@ -45,31 +45,31 @@
         "num_samples": 100
       },
       "difficulty": {
-        "spearman_rho": 0.8854759982365611,
-        "spearman_pvalue": 2.1797811197955455e-34,
-        "pearson_r": 0.9996692238753161,
-        "pearson_pvalue": 1.286718377109374e-157,
+        "spearman_rho": -0.0497022723603142,
+        "spearman_pvalue": 0.6233715635934577,
+        "pearson_r": -0.014047702874477928,
+        "pearson_pvalue": 0.8896732201069018,
         "num_samples": 100
       },
       "sprite": {
-        "spearman_rho": 0.8501944510803401,
-        "spearman_pvalue": 4.661968552971924e-29,
-        "pearson_r": 0.9193014757613057,
-        "pearson_pvalue": 1.7840190797731632e-41,
+        "spearman_rho": 0.05867639790929608,
+        "spearman_pvalue": 0.5619909104017837,
+        "pearson_r": 0.21710939350436015,
+        "pearson_pvalue": 0.03002586830038809,
         "num_samples": 100
       },
       "wall_texture": {
-        "spearman_rho": 0.0,
-        "spearman_pvalue": 1.0,
-        "pearson_r": 0.0,
-        "pearson_pvalue": 1.0,
+        "spearman_rho": -0.0240567345072024,
+        "spearman_pvalue": 0.8122090436507634,
+        "pearson_r": -0.04065576258670509,
+        "pearson_pvalue": 0.6879693715538994,
         "num_samples": 100
       }
     }
   },
   "TLDAWeighter (Lipschitz)": {
-    "overall_rho": 0.363985913208891,
-    "overall_pvalue": 5.6343984950006374e-14,
+    "overall_rho": 0.020512369485887274,
+    "overall_pvalue": 0.6825348496714437,
     "axis_breakdown": {
       "background": {
         "spearman_rho": 0.0,
@@ -79,31 +79,31 @@
         "num_samples": 100
       },
       "difficulty": {
-        "spearman_rho": 0.8854759982365611,
-        "spearman_pvalue": 2.1797811197955455e-34,
-        "pearson_r": 0.9982853425144912,
-        "pearson_pvalue": 1.2967575066989622e-122,
+        "spearman_rho": -0.11715535627788348,
+        "spearman_pvalue": 0.24571236842178054,
+        "pearson_r": -0.042931567249580506,
+        "pearson_pvalue": 0.6714828635653198,
         "num_samples": 100
       },
       "sprite": {
-        "spearman_rho": 0.8501944510803401,
-        "spearman_pvalue": 4.661968552971924e-29,
-        "pearson_r": 0.9429005874055757,
-        "pearson_pvalue": 1.3779762994081488e-48,
+        "spearman_rho": 0.05797707648131923,
+        "spearman_pvalue": 0.5666691434195383,
+        "pearson_r": 0.2277124623810767,
+        "pearson_pvalue": 0.02269577525300243,
         "num_samples": 100
       },
       "wall_texture": {
-        "spearman_rho": 0.0,
-        "spearman_pvalue": 1.0,
-        "pearson_r": 0.0,
-        "pearson_pvalue": 1.0,
+        "spearman_rho": -0.030931555261289715,
+        "spearman_pvalue": 0.7599855227009226,
+        "pearson_r": -0.029340469441671166,
+        "pearson_pvalue": 0.7719858799402599,
         "num_samples": 100
       }
     }
   },
   "SaliencyWeighter (Critic)": {
-    "overall_rho": 0.4350498295972936,
-    "overall_pvalue": 6.686543484634688e-20,
+    "overall_rho": 0.027186284475835702,
+    "overall_pvalue": 0.5877328723310558,
     "axis_breakdown": {
       "background": {
         "spearman_rho": 0.0,
@@ -113,24 +113,24 @@
         "num_samples": 100
       },
       "difficulty": {
-        "spearman_rho": 0.8854759982365611,
-        "spearman_pvalue": 2.1797811197955455e-34,
-        "pearson_r": 0.9850824477858081,
-        "pearson_pvalue": 1.0326278120994597e-76,
+        "spearman_rho": 0.18815860250690375,
+        "spearman_pvalue": 0.06083243289093682,
+        "pearson_r": 0.16136331795781353,
+        "pearson_pvalue": 0.10874151015494947,
         "num_samples": 100
       },
       "sprite": {
-        "spearman_rho": 0.8501944510803401,
-        "spearman_pvalue": 4.661968552971924e-29,
-        "pearson_r": 0.9587055955567694,
-        "pearson_pvalue": 2.5604169772041793e-55,
+        "spearman_rho": 0.0529819234243417,
+        "spearman_pvalue": 0.6006082443327907,
+        "pearson_r": 0.20214031162467372,
+        "pearson_pvalue": 0.043710104070511645,
         "num_samples": 100
       },
       "wall_texture": {
-        "spearman_rho": 0.0,
-        "spearman_pvalue": 1.0,
-        "pearson_r": 0.0,
-        "pearson_pvalue": 1.0,
+        "spearman_rho": -0.052008173148633645,
+        "spearman_pvalue": 0.6073281932932248,
+        "pearson_r": -0.03471499024561759,
+        "pearson_pvalue": 0.731682157143918,
         "num_samples": 100
       }
     }
