@@ -135,7 +135,25 @@ class DrQv2Policy(BasePolicy):
             nn.ReLU(),
             nn.Linear(256, 1 if self.is_continuous else action_dim),
         )
+        # Target Critic networks for stable TD learning
+        self.target_q1 = nn.Sequential(
+            nn.Linear(critic_in, 256),
+            nn.ReLU(),
+            nn.Linear(256, 1 if self.is_continuous else action_dim),
+        )
+        self.target_q2 = nn.Sequential(
+            nn.Linear(critic_in, 256),
+            nn.ReLU(),
+            nn.Linear(256, 1 if self.is_continuous else action_dim),
+        )
+        self.target_q1.load_state_dict(self.q1.state_dict())
+        self.target_q2.load_state_dict(self.q2.state_dict())
+        for p in self.target_q1.parameters():
+            p.requires_grad = False
+        for p in self.target_q2.parameters():
+            p.requires_grad = False
 
+        self.tau = 0.02
         self.optimizer = torch.optim.Adam(self.parameters(), lr=lr)
 
     def act(self, obs: Union[np.ndarray, torch.Tensor], deterministic: bool = True) -> Any:
@@ -175,19 +193,18 @@ class DrQv2Policy(BasePolicy):
         next_obs_aug = self.aug(next_obs_p)
 
         # 2. Compute embeddings
-        # Note: preprocess_obs is already applied, so pass to embed trunk
         emb = self.encoder.embed(obs_aug)
         with torch.no_grad():
             next_emb = self.encoder.embed(next_obs_aug)
             if self.is_continuous:
                 next_action = self.actor(next_emb)
-                target_q1 = self.q1(torch.cat([next_emb, next_action], dim=-1))
-                target_q2 = self.q2(torch.cat([next_emb, next_action], dim=-1))
+                target_q1 = self.target_q1(torch.cat([next_emb, next_action], dim=-1))
+                target_q2 = self.target_q2(torch.cat([next_emb, next_action], dim=-1))
                 target_q = torch.min(target_q1, target_q2)
                 target_value = reward + (1.0 - done) * self.gamma * target_q
             else:
-                next_q1 = self.q1(next_emb)
-                next_q2 = self.q2(next_emb)
+                next_q1 = self.target_q1(next_emb)
+                next_q2 = self.target_q2(next_emb)
                 target_q = torch.min(next_q1, next_q2).max(dim=-1, keepdim=True)[0]
                 target_value = reward + (1.0 - done) * self.gamma * target_q
 
@@ -197,8 +214,9 @@ class DrQv2Policy(BasePolicy):
             current_q2 = self.q2(torch.cat([emb, action], dim=-1))
             critic_loss = F.mse_loss(current_q1, target_value) + F.mse_loss(current_q2, target_value)
         else:
-            current_q1 = self.q1(emb).gather(1, action.long())
-            current_q2 = self.q2(emb).gather(1, action.long())
+            act_idx = action.view(-1, 1).long()
+            current_q1 = self.q1(emb).gather(1, act_idx)
+            current_q2 = self.q2(emb).gather(1, act_idx)
             critic_loss = F.mse_loss(current_q1, target_value) + F.mse_loss(current_q2, target_value)
 
         # 4. Actor loss
@@ -215,7 +233,17 @@ class DrQv2Policy(BasePolicy):
 
         self.optimizer.zero_grad()
         total_loss.backward()
+        nn.utils.clip_grad_norm_(self.parameters(), 1.0)
         self.optimizer.step()
+
+        # Polyak update target networks
+        with torch.no_grad():
+            for p, p_target in zip(self.q1.parameters(), self.target_q1.parameters()):
+                p_target.data.mul_(1.0 - self.tau)
+                p_target.data.add_(self.tau * p.data)
+            for p, p_target in zip(self.q2.parameters(), self.target_q2.parameters()):
+                p_target.data.mul_(1.0 - self.tau)
+                p_target.data.add_(self.tau * p.data)
 
         return {
             "critic_loss": float(critic_loss.item()),

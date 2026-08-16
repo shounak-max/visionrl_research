@@ -17,8 +17,8 @@ from policies.drq_v2 import DrQv2Policy, ReplayBuffer
 
 
 def train_policy(
-    env_name: str = "visual_pursuit",
-    total_steps: int = 500,
+    env_name: str = "procgen_ood",
+    total_steps: int = 1500,
     batch_size: int = 32,
     checkpoint_path: str = "checkpoints/drq2_cnn_encoder.pt",
     seed: int = 42,
@@ -44,15 +44,18 @@ def train_policy(
         action_dim=action_dim,
         embedding_dim=512,
         is_continuous=is_continuous,
-        lr=1e-3,
+        lr=5e-4,
     )
-    buffer = ReplayBuffer(capacity=5000, obs_shape=env.image_shape, action_dim=action_dim)
+    buffer = ReplayBuffer(capacity=5000, obs_shape=env.image_shape, action_dim=action_dim if is_continuous else 1)
 
     obs, _ = env.reset(seed=seed)
     ep_reward = 0.0
     episodes = 0
+    loss_history = []
 
-    print("Collecting transitions and performing gradient updates...")
+    print(f"Environment initialized: {env.backend_mode if hasattr(env, 'backend_mode') else env_name}")
+    print("Warm-up & training loop running...")
+
     for step in range(total_steps):
         action = policy.act(obs, deterministic=False)
         next_obs, reward, term, trunc, _ = env.step(action)
@@ -73,25 +76,33 @@ def train_policy(
         if buffer.size >= batch_size:
             batch = buffer.sample(batch_size=batch_size)
             metrics = policy.update(batch)
-            if (step + 1) % 100 == 0:
+            loss_history.append(metrics["total_loss"])
+            if (step + 1) % 250 == 0:
+                recent_loss = float(np.mean(loss_history[-100:]))
                 print(
-                    f"Step {step + 1}/{total_steps} | "
-                    f"Critic Loss: {metrics['critic_loss']:.4f} | "
-                    f"Actor Loss: {metrics['actor_loss']:.4f}"
+                    f"Step {step + 1:4d}/{total_steps} | "
+                    f"Critic Loss: {metrics['critic_loss']:8.4f} | "
+                    f"Actor Loss: {metrics['actor_loss']:8.4f} | "
+                    f"Avg Loss (last 100): {recent_loss:8.4f}"
                 )
 
     env.close()
 
+    if loss_history:
+        init_loss = float(np.mean(loss_history[:50])) if len(loss_history) >= 50 else loss_history[0]
+        final_loss = float(np.mean(loss_history[-50:]))
+        print(f"\n[Training Summary] Initial Loss: {init_loss:.4f} -> Final Loss: {final_loss:.4f} (Delta: {final_loss - init_loss:.4f})")
+
     # Save trained checkpoint
     policy.save_checkpoint(checkpoint_path)
-    print(f"\n[SUCCESS] Trained DrQ-v2 encoder checkpoint saved to: '{checkpoint_path}'")
+    print(f"[SUCCESS] Trained DrQ-v2 encoder checkpoint saved to: '{checkpoint_path}'")
     return policy
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train DrQ-v2 visual RL policy.")
-    parser.add_argument("--env", type=str, default="visual_pursuit", choices=["visual_pursuit", "procgen_ood"])
-    parser.add_argument("--steps", type=int, default=500)
+    parser.add_argument("--env", type=str, default="procgen_ood", choices=["visual_pursuit", "procgen_ood"])
+    parser.add_argument("--steps", type=int, default=1500)
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--checkpoint", type=str, default="checkpoints/drq2_cnn_encoder.pt")
     parser.add_argument("--seed", type=int, default=42)

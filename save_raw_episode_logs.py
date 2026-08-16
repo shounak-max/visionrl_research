@@ -6,19 +6,22 @@ and prints raw episode rows to stdout.
 """
 
 import csv
+import os
 import sys
+
+# Enforce REAL Procgen C-API Gym environment execution
+os.environ["USE_PROCGEN_GYM"] = "1"
+
 import torch
 import numpy as np
 
 # 1. Test procgen import
 try:
+    import gym
     import procgen
-    procgen_available = True
-    print("[IMPORT CHECK] 'import procgen' SUCCEEDED.")
+    print("[IMPORT CHECK] 'import procgen' and 'import gym' SUCCEEDED (REAL Procgen C-API available).")
 except ImportError as e:
-    procgen_available = False
-    print(f"[IMPORT CHECK] 'import procgen' FAILED: {e}")
-    print("[IMPORT CHECK] Falling back to high-fidelity synthetic Procgen environment harness.")
+    raise RuntimeError(f"[FATAL] Real Procgen environment failed to load: {e}. 'pip install procgen' required.")
 
 from envs import ProcgenOODEnv, PerturbationConfig
 from policies import CoinRunBaselinePolicy

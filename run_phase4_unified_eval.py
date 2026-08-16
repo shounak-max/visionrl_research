@@ -13,6 +13,9 @@ import json
 import os
 import sys
 
+# Enforce REAL Procgen C-API Gym environment execution
+os.environ["USE_PROCGEN_GYM"] = "1"
+
 from run_phase1_semantic_eval import evaluate_phase1_grid
 from run_phase2_geometry_eval import evaluate_phase2_geometry
 from run_phase3_ttss_eval import evaluate_phase3_ttss

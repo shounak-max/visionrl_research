@@ -11,6 +11,10 @@ Sweeps subspace dimensions k in {5, 10, 20} on Grassmann manifolds Gr(k, D).
 
 import json
 import os
+
+# Enforce REAL Procgen C-API Gym environment execution
+os.environ["USE_PROCGEN_GYM"] = "1"
+
 from typing import Dict, List
 import numpy as np
 import torch

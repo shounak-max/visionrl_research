@@ -9,6 +9,10 @@ Reproduces the two reference correlations using plain d_rep:
 import json
 import os
 import sys
+
+# Enforce REAL Procgen C-API Gym environment execution
+os.environ["USE_PROCGEN_GYM"] = "1"
+
 from typing import Dict, List, Tuple
 import numpy as np
 import torch

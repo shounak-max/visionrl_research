@@ -8,8 +8,9 @@ from envs.base_env import BaseVisualEnvironment, PerturbationConfig
 class ProcgenCoinRunEnv(BaseVisualEnvironment):
     """Procgen CoinRun environment wrapper.
 
-    Supports live Gym Procgen bindings (when use_procgen_gym=True or USE_PROCGEN_GYM=1 in env),
-    and high-fidelity synthetic fallback with full control over 4 holdout perturbation axes.
+    Runs REAL Gym Procgen bindings by default (USE_PROCGEN_GYM=1).
+    Raises an explicit RuntimeError if Procgen C-API fails to load, preventing silent fallback.
+    Synthetic simulation is only enabled if explicitly requested via use_procgen_gym=False or USE_PROCGEN_GYM=0.
     """
 
     def __init__(
@@ -26,13 +27,13 @@ class ProcgenCoinRunEnv(BaseVisualEnvironment):
             image_shape=image_shape,
         )
         if use_procgen_gym is None:
-            # Check environment variable default
-            use_procgen_gym = os.environ.get("USE_PROCGEN_GYM", "0").lower() in ["1", "true", "yes"]
+            # Default to True (strict Real Procgen) unless explicitly opted out
+            use_procgen_gym = os.environ.get("USE_PROCGEN_GYM", "1").lower() in ["1", "true", "yes"]
 
         self.use_procgen_gym = use_procgen_gym
         self.gym_env = None
         self._rng = np.random.RandomState(seed)
-        self.backend_mode = "synthetic_coinrun"
+        self.backend_mode = "real_procgen_gym" if self.use_procgen_gym else "synthetic_coinrun"
 
         if self.use_procgen_gym:
             try:
@@ -42,14 +43,14 @@ class ProcgenCoinRunEnv(BaseVisualEnvironment):
                 self.gym_env = gym.make(
                     "procgen:procgen-coinrun-v0", start_level=seed, num_levels=100
                 )
-                self.backend_mode = "real_procgen_gym"
                 print(f"[ProcgenCoinRunEnv] Initialized REAL Procgen C-API Gym environment (start_level={seed}).")
             except Exception as e:
-                print(
-                    f"[ProcgenCoinRunEnv Warning] Real Procgen loading failed ({e}). Using synthetic CoinRun simulation."
+                raise RuntimeError(
+                    f"Failed to initialize REAL Procgen C-API Gym environment: {e}.\n"
+                    "Ensure 'procgen' is installed in your Python environment (`pip install procgen`).\n"
+                    "If you explicitly intend to run the synthetic toy simulation for offline testing, "
+                    "pass `use_procgen_gym=False` or export `USE_PROCGEN_GYM=0`."
                 )
-                self.use_procgen_gym = False
-                self.backend_mode = "synthetic_coinrun"
 
         # State tracking for internal simulator fallback
         self.max_steps = 100
@@ -72,6 +73,10 @@ class ProcgenCoinRunEnv(BaseVisualEnvironment):
         self.current_step = 0
         if self.use_procgen_gym and self.gym_env is not None:
             obs = self.gym_env.reset()
+            # Normalize uint8 [0, 255] -> float32 [0.0, 1.0]
+            if obs.dtype == np.uint8 or obs.max() > 1.0:
+                obs = (obs / 255.0).astype(np.float32)
+            obs = self._apply_perturbations_to_frame(obs)
             mask = self._extract_gym_mask(obs)
             return obs, {"ground_truth_mask": mask}
 
@@ -100,6 +105,9 @@ class ProcgenCoinRunEnv(BaseVisualEnvironment):
 
         if self.use_procgen_gym and self.gym_env is not None:
             obs, reward, done, info = self.gym_env.step(action)
+            if obs.dtype == np.uint8 or obs.max() > 1.0:
+                obs = (obs / 255.0).astype(np.float32)
+            obs = self._apply_perturbations_to_frame(obs)
             mask = self._extract_gym_mask(obs)
             info["ground_truth_mask"] = mask
             return obs, float(reward), done, False, info
@@ -237,12 +245,40 @@ class ProcgenCoinRunEnv(BaseVisualEnvironment):
         obs = np.clip(obs, 0.0, 1.0)
         return obs, mask
 
+    def _apply_perturbations_to_frame(self, obs: np.ndarray) -> np.ndarray:
+        """Applies controlled perturbations to real Procgen observation frames."""
+        if self.perturbation_config is None or self.perturbation_config.axis == "clean" or self.perturbation_config.intensity <= 0.0:
+            return obs
+        axis = self.perturbation_config.axis
+        intensity = self.perturbation_config.intensity
+        H, W, C = obs.shape
+        if axis == "background":
+            freq = 2.0 + 3.0 * intensity
+            bg_pattern = (
+                np.sin(np.linspace(0, freq * np.pi, W))
+                .reshape(1, W, 1)
+                .repeat(H, axis=0)
+            )
+            obs = np.clip(obs + bg_pattern * (0.2 + 0.3 * intensity), 0.0, 1.0)
+        elif axis == "wall_texture":
+            noise = self._rng.uniform(-0.35, 0.35, size=(H, W, C)) * intensity
+            obs = np.clip(obs + noise, 0.0, 1.0)
+        elif axis == "sprite":
+            # Sprite shift modulates color channels / hue
+            obs[:, :, 0] = np.clip(obs[:, :, 0] * (1.0 + 0.5 * intensity), 0.0, 1.0)
+            obs[:, :, 2] = np.clip(obs[:, :, 2] * (1.0 - 0.5 * intensity), 0.0, 1.0)
+        elif axis == "difficulty":
+            # Add visual complexity / occlusion
+            noise = self._rng.normal(0.0, 0.15 * intensity, size=(H, W, C))
+            obs = np.clip(obs + noise, 0.0, 1.0)
+        return obs.astype(np.float32)
+
     def _extract_gym_mask(self, obs: np.ndarray) -> np.ndarray:
         """Extracts ground-truth hazard/entity mask from Procgen observation or asset layer."""
-        # Simple color thresholding heuristic for real Procgen frame if asset C API not bound
-        H, W, C = obs.shape[:2], obs.shape[1], obs.shape[2]
+        # Color thresholding heuristic for real Procgen frame
         mask = np.zeros(obs.shape[:2], dtype=np.float32)
         # Red hazard channel dominance check
-        is_red = (obs[:, :, 0] > 180) & (obs[:, :, 1] < 50) & (obs[:, :, 2] < 50)
+        is_red = (obs[:, :, 0] > 0.6) & (obs[:, :, 1] < 0.25) & (obs[:, :, 2] < 0.25)
         mask[is_red] = 1.0
         return mask
+
