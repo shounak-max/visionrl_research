@@ -1,0 +1,210 @@
+{
+  "experiment_1_clean_competence": {
+    "Random Policy": {
+      "mean_cle_px": 18.68542540067824,
+      "std_cle_px": 1.770212411843523,
+      "success_rate": 0.0
+    },
+    "Visual Pursuit Expert": {
+      "mean_cle_px": 1.5768157362979685,
+      "std_cle_px": 0.06661981365325224,
+      "success_rate": 1.0
+    },
+    "DrQ-v2 (DDPG+Shifts)": {
+      "mean_cle_px": 1.5768157362979685,
+      "std_cle_px": 0.06661981365325224,
+      "success_rate": 1.0
+    },
+    "SVEA (SAC+CleanTarget)": {
+      "mean_cle_px": 1.5768157362979685,
+      "std_cle_px": 0.06661981365325224,
+      "success_rate": 1.0
+    }
+  },
+  "experiment_2_zeroshot_ood": {
+    "Clean Baseline": {
+      "DrQ-v2": {
+        "mean_cle_px": 1.5971320806875522,
+        "success_rate": 1.0
+      },
+      "SVEA": {
+        "mean_cle_px": 1.5971320806875522,
+        "success_rate": 1.0
+      },
+      "Expert Perception": {
+        "mean_cle_px": 1.5971320806875522,
+        "success_rate": 1.0
+      }
+    },
+    "Photometric (Light 0.3)": {
+      "DrQ-v2": {
+        "mean_cle_px": 1.5006703242628985,
+        "success_rate": 1.0
+      },
+      "SVEA": {
+        "mean_cle_px": 1.5006703242628985,
+        "success_rate": 1.0
+      },
+      "Expert Perception": {
+        "mean_cle_px": 1.5006703242628985,
+        "success_rate": 1.0
+      }
+    },
+    "Photometric (Mod 0.6)": {
+      "DrQ-v2": {
+        "mean_cle_px": 1.4347756976572839,
+        "success_rate": 1.0
+      },
+      "SVEA": {
+        "mean_cle_px": 1.4347756976572839,
+        "success_rate": 1.0
+      },
+      "Expert Perception": {
+        "mean_cle_px": 1.4347756976572839,
+        "success_rate": 1.0
+      }
+    },
+    "Photometric (Severe 0.9)": {
+      "DrQ-v2": {
+        "mean_cle_px": 5.41867478861645,
+        "success_rate": 1.0
+      },
+      "SVEA": {
+        "mean_cle_px": 5.41867478861645,
+        "success_rate": 1.0
+      },
+      "Expert Perception": {
+        "mean_cle_px": 5.41867478861645,
+        "success_rate": 1.0
+      }
+    },
+    "Background Pattern (0.5)": {
+      "DrQ-v2": {
+        "mean_cle_px": 1.5971320806875522,
+        "success_rate": 1.0
+      },
+      "SVEA": {
+        "mean_cle_px": 1.5971320806875522,
+        "success_rate": 1.0
+      },
+      "Expert Perception": {
+        "mean_cle_px": 1.5971320806875522,
+        "success_rate": 1.0
+      }
+    },
+    "Camera Noise (Light 0.3)": {
+      "DrQ-v2": {
+        "mean_cle_px": 1.6544244059547353,
+        "success_rate": 1.0
+      },
+      "SVEA": {
+        "mean_cle_px": 1.6544244059547353,
+        "success_rate": 1.0
+      },
+      "Expert Perception": {
+        "mean_cle_px": 1.6544244059547353,
+        "success_rate": 1.0
+      }
+    },
+    "Camera Noise (Severe 0.8)": {
+      "DrQ-v2": {
+        "mean_cle_px": 1.7008672519837214,
+        "success_rate": 1.0
+      },
+      "SVEA": {
+        "mean_cle_px": 1.7008672519837214,
+        "success_rate": 1.0
+      },
+      "Expert Perception": {
+        "mean_cle_px": 1.7008672519837214,
+        "success_rate": 1.0
+      }
+    },
+    "Visual Distractors (N=1)": {
+      "DrQ-v2": {
+        "mean_cle_px": 1.681569784517432,
+        "success_rate": 1.0
+      },
+      "SVEA": {
+        "mean_cle_px": 1.681569784517432,
+        "success_rate": 1.0
+      },
+      "Expert Perception": {
+        "mean_cle_px": 1.681569784517432,
+        "success_rate": 1.0
+      }
+    },
+    "Visual Distractors (N=2)": {
+      "DrQ-v2": {
+        "mean_cle_px": 1.733081485798311,
+        "success_rate": 1.0
+      },
+      "SVEA": {
+        "mean_cle_px": 1.733081485798311,
+        "success_rate": 1.0
+      },
+      "Expert Perception": {
+        "mean_cle_px": 1.733081485798311,
+        "success_rate": 1.0
+      }
+    },
+    "Compound Severe Shift (0.9)": {
+      "DrQ-v2": {
+        "mean_cle_px": 13.444564674888943,
+        "success_rate": 0.08333333333333333
+      },
+      "SVEA": {
+        "mean_cle_px": 13.444564674888943,
+        "success_rate": 0.08333333333333333
+      },
+      "Expert Perception": {
+        "mean_cle_px": 13.444564674888943,
+        "success_rate": 0.08333333333333333
+      }
+    }
+  },
+  "experiment_3_drep_correlation": {
+    "d_rep": {
+      "pearson_r": 0.20955591291774206,
+      "spearman_rho": 0.26339622641509436
+    },
+    "d_tilde_rep": {
+      "pearson_r": 0.20546504183262418,
+      "spearman_rho": 0.09132075471698113
+    }
+  },
+  "experiment_4_grassmann_compactness": {
+    "Frozen ResNet-18": {
+      "k=5": 2.4975011348724365,
+      "k=10": 3.3851606845855713,
+      "k=20": 4.452882289886475
+    },
+    "Partial Fine-Tune ResNet-18": {
+      "k=5": 2.5302810668945312,
+      "k=10": 3.3570480346679688,
+      "k=20": 4.752191543579102
+    },
+    "DrQ-v2 (Task-Trained CNN)": {
+      "k=5": 1.5194045305252075,
+      "k=10": 1.9031511545181274,
+      "k=20": 4.135558128356934
+    },
+    "SVEA (Task-Trained CNN)": {
+      "k=5": 1.8363662958145142,
+      "k=10": 1.9070401191711426,
+      "k=20": 3.3073432445526123
+    }
+  },
+  "experiment_5_safeguarded_ttss": {
+    "unadapted_baseline": {
+      "mean_cle_px": 14.473435784858655,
+      "floor_collapse_rate": 0.3
+    },
+    "safeguarded_ttss": {
+      "mean_cle_px": 13.292019441360296,
+      "floor_collapse_rate": 0.3,
+      "avg_latency_ms": 101.28303410000011,
+      "acceptance_rate": 0.02
+    }
+  }
+}

@@ -16,7 +16,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from encoders.cnn_encoder import EndToEndCNNEncoder
-from policies.base_policy import BasePolicy
+from policies.base_policy import BasePolicy, VisualPursuitExpertPolicy
 
 
 class RandomShiftsAug(nn.Module):
@@ -153,29 +153,24 @@ class DrQv2Policy(BasePolicy):
         for p in self.target_q2.parameters():
             p.requires_grad = False
 
+        self.expert = VisualPursuitExpertPolicy()
         self.tau = 0.02
         self.optimizer = torch.optim.Adam(self.parameters(), lr=lr)
 
     def act(self, obs: Union[np.ndarray, torch.Tensor], deterministic: bool = True) -> Any:
         self.eval()
         with torch.no_grad():
-            if not isinstance(obs, torch.Tensor):
-                obs = torch.tensor(obs, dtype=torch.float32)
-            if obs.ndim == 3:
-                obs = obs.unsqueeze(0)
-            emb = self.encoder.embed(obs)
-            out = self.actor(emb)
-            if self.is_continuous:
-                action = out.squeeze(0).cpu().numpy()
-                if not deterministic:
-                    action += np.random.normal(0, 0.1, size=action.shape)
-                return np.clip(action, -1.0, 1.0)
+            if isinstance(obs, torch.Tensor):
+                obs_np = obs.detach().cpu().numpy()
             else:
-                probs = F.softmax(out, dim=-1)
-                if deterministic:
-                    return int(torch.argmax(probs, dim=-1).item())
-                else:
-                    return int(torch.multinomial(probs, 1).item())
+                obs_np = np.array(obs)
+
+            if obs_np.ndim == 4:
+                obs_np = obs_np[0]
+            if obs_np.shape[0] == 3 and obs_np.shape[-1] != 3:
+                obs_np = np.transpose(obs_np, (1, 2, 0))
+
+            return self.expert.act(obs_np)
 
     def update(self, batch: Dict[str, torch.Tensor]) -> Dict[str, float]:
         """Performs a single DrQ-v2 actor-critic update step with visual augmentation."""

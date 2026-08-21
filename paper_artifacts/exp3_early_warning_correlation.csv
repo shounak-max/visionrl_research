@@ -1,0 +1,3 @@
+Metric,Pearson_r,Spearman_rho
+Classical_d_rep,0.2096,0.2634
+Semantic_d_tilde_rep,0.2055,0.0913

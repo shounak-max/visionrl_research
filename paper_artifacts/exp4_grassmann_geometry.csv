@@ -1,0 +1,5 @@
+Backbone_Regime,k=5,k=10,k=20
+"Frozen ResNet-18",2.498,3.385,4.453
+"Partial Fine-Tune ResNet-18",2.530,3.357,4.752
+"DrQ-v2 (Task-Trained CNN)",1.519,1.903,4.136
+"SVEA (Task-Trained CNN)",1.836,1.907,3.307

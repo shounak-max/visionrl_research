@@ -9,4 +9,5 @@ from policies.base_policy import (
     CoinRunBaselinePolicy,
 )
 from policies.drq_v2 import DrQv2Policy, ReplayBuffer
+from policies.svea import SVEAPolicy
 
