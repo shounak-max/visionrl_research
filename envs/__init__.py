@@ -24,7 +24,7 @@ def make_env(
         return ProcgenCoinRunEnv(seed=seed, perturbation_config=perturbation_config)
     elif env_id == "procgen_ood":
         return ProcgenOODEnv(seed=seed, perturbation_config=perturbation_config)
-    elif env_id in ["visual_pursuit", "tracking"]:
+    elif env_id in ["visual_pursuit", "tracking", "SingleObjectTracking-v0", "single_object_tracking"]:
         return VisualPursuitEnv(seed=seed, perturbation_config=perturbation_config)
     else:
         raise ValueError(f"Unknown env_id: '{env_id}'")
