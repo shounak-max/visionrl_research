@@ -24,8 +24,8 @@ class EndToEndCNNEncoder(BaseEncoder):
         self.conv4 = nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1)
         self.relu = nn.ReLU(inplace=False)
 
-        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc = nn.Linear(32, embedding_dim)
+        self.avgpool = nn.AdaptiveAvgPool2d((4, 4))
+        self.fc = nn.Linear(32 * 4 * 4, embedding_dim)
 
     def embed_spatial(self, obs: torch.Tensor) -> torch.Tensor:
         x = self.preprocess_obs(obs)

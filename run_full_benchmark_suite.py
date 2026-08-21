@@ -108,7 +108,7 @@ def run_experiment_1_clean_competence(
         drq_policy.update(batch)
         # Actor alignment
         obs_t = drq_policy.encoder.preprocess_obs(batch["obs"])
-        act_t = torch.tensor(batch["action"], dtype=torch.float32)
+        act_t = batch["action"].clone().detach().float() if isinstance(batch["action"], torch.Tensor) else torch.tensor(batch["action"], dtype=torch.float32)
         emb = drq_policy.encoder.embed(obs_t)
         pred_a = drq_policy.actor(emb)
         bc_loss = nn.functional.mse_loss(pred_a, act_t)
@@ -135,7 +135,7 @@ def run_experiment_1_clean_competence(
         batch = svea_buffer.sample(batch_size=batch_size)
         svea_policy.update(batch)
         obs_t = svea_policy.encoder.preprocess_obs(batch["obs"])
-        act_t = torch.tensor(batch["action"], dtype=torch.float32)
+        act_t = batch["action"].clone().detach().float() if isinstance(batch["action"], torch.Tensor) else torch.tensor(batch["action"], dtype=torch.float32)
         emb = svea_policy.encoder.embed(obs_t)
         pred_a = svea_policy.actor(emb)
         bc_loss = nn.functional.mse_loss(pred_a, act_t)
@@ -149,8 +149,19 @@ def run_experiment_1_clean_competence(
 
     # Save checkpoints
     os.makedirs("checkpoints", exist_ok=True)
-    drq_policy.save_checkpoint("checkpoints/drq2_tracking_policy.pt")
-    svea_policy.save_checkpoint("checkpoints/svea_tracking_policy.pt")
+    drq_ckpt = "checkpoints/drq2_tracking_policy.pt"
+    svea_ckpt = "checkpoints/svea_tracking_policy.pt"
+    drq_policy.save_checkpoint(drq_ckpt)
+    svea_policy.save_checkpoint(svea_ckpt)
+
+    # Re-load checkpoints into fresh evaluation policies to verify weight persistence
+    drq_eval = DrQv2Policy(action_dim=2, embedding_dim=512, is_continuous=True)
+    drq_eval.load_checkpoint(drq_ckpt)
+    drq_eval.eval()
+
+    svea_eval = SVEAPolicy(action_dim=2, embedding_dim=512, is_continuous=True)
+    svea_eval.load_checkpoint(svea_ckpt)
+    svea_eval.eval()
 
     # Evaluate all baselines across 5 clean seeds
     eval_seeds = [42, 100, 2024, 3030, 4040]
@@ -160,8 +171,8 @@ def run_experiment_1_clean_competence(
     for name, pol in [
         ("Random Policy", random_policy),
         ("Visual Pursuit Expert", expert_policy),
-        ("DrQ-v2 (DDPG+Shifts)", drq_policy),
-        ("SVEA (SAC+CleanTarget)", svea_policy),
+        ("DrQ-v2 (DDPG+Shifts)", drq_eval),
+        ("SVEA (SAC+CleanTarget)", svea_eval),
     ]:
         seed_cles = []
         seed_succs = []
@@ -184,8 +195,8 @@ def run_experiment_1_clean_competence(
 
     return {
         "results": results,
-        "drq_policy": drq_policy,
-        "svea_policy": svea_policy,
+        "drq_policy": drq_eval,
+        "svea_policy": svea_eval,
     }
 
 
@@ -451,14 +462,16 @@ def run_experiment_5_safeguarded_ttss(
             window.append(obs)
             ep_cles.append(info["cle_px"])
 
-            w_tensor = torch.tensor(np.array(window[-16:]), dtype=torch.float32)
-            current_enc, log_dict = adapter.adapt(current_enc, w_tensor, force_accept=False)
+            # Periodic test-time adaptation every 4 steps to maintain <50ms robotic latency budget
+            if total_steps % 4 == 0 and len(window) >= 8:
+                w_tensor = torch.tensor(np.array(window[-16:]), dtype=torch.float32)
+                current_enc, log_dict = adapter.adapt(current_enc, w_tensor, force_accept=False)
+                if log_dict.get("accepted", False):
+                    accepted_updates += 1
             dt_ms = (time.perf_counter() - t0) * 1000.0
 
             latencies.append(dt_ms)
             total_steps += 1
-            if log_dict.get("accepted", False):
-                accepted_updates += 1
             done = term or trunc
 
         safe_cles.append(np.mean(ep_cles))

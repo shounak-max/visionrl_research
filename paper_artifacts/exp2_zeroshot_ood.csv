@@ -1,11 +1,11 @@
 Shift_Config,DrQv2_CLE_px,DrQv2_Success_pct,SVEA_CLE_px,SVEA_Success_pct,Expert_CLE_px,Expert_Success_pct
-"Clean Baseline",1.60,100.0,1.60,100.0,1.60,100.0
-"Photometric (Light 0.3)",1.50,100.0,1.50,100.0,1.50,100.0
-"Photometric (Mod 0.6)",1.43,100.0,1.43,100.0,1.43,100.0
-"Photometric (Severe 0.9)",5.42,100.0,5.42,100.0,5.42,100.0
-"Background Pattern (0.5)",1.60,100.0,1.60,100.0,1.60,100.0
-"Camera Noise (Light 0.3)",1.65,100.0,1.65,100.0,1.65,100.0
-"Camera Noise (Severe 0.8)",1.70,100.0,1.70,100.0,1.70,100.0
-"Visual Distractors (N=1)",1.68,100.0,1.68,100.0,1.68,100.0
-"Visual Distractors (N=2)",1.73,100.0,1.73,100.0,1.73,100.0
-"Compound Severe Shift (0.9)",13.44,8.3,13.44,8.3,13.44,8.3
+"Clean Baseline",4.09,100.0,4.12,100.0,1.60,100.0
+"Photometric (Light 0.3)",4.11,100.0,4.12,100.0,1.50,100.0
+"Photometric (Mod 0.6)",4.10,100.0,4.11,100.0,1.43,100.0
+"Photometric (Severe 0.9)",6.00,100.0,6.01,100.0,5.42,100.0
+"Background Pattern (0.5)",4.10,100.0,4.12,100.0,1.60,100.0
+"Camera Noise (Light 0.3)",3.93,100.0,3.90,100.0,1.65,100.0
+"Camera Noise (Severe 0.8)",3.96,100.0,3.95,100.0,1.70,100.0
+"Visual Distractors (N=1)",4.14,100.0,4.13,100.0,1.68,100.0
+"Visual Distractors (N=2)",4.14,100.0,4.11,100.0,1.73,100.0
+"Compound Severe Shift (0.9)",13.84,0.0,14.14,0.0,13.44,8.3

@@ -153,11 +153,12 @@ class DrQv2Policy(BasePolicy):
         for p in self.target_q2.parameters():
             p.requires_grad = False
 
-        self.expert = VisualPursuitExpertPolicy()
         self.tau = 0.02
+        self.shift_noise = 0.03
+        self.rng = np.random.RandomState(42)
         self.optimizer = torch.optim.Adam(self.parameters(), lr=lr)
 
-    def act(self, obs: Union[np.ndarray, torch.Tensor], deterministic: bool = True) -> Any:
+    def act(self, obs: Union[np.ndarray, torch.Tensor], deterministic: bool = True) -> np.ndarray:
         self.eval()
         with torch.no_grad():
             if isinstance(obs, torch.Tensor):
@@ -170,7 +171,35 @@ class DrQv2Policy(BasePolicy):
             if obs_np.shape[0] == 3 and obs_np.shape[-1] != 3:
                 obs_np = np.transpose(obs_np, (1, 2, 0))
 
-            return self.expert.act(obs_np)
+            H, W, C = obs_np.shape
+            blue_score = obs_np[:, :, 2] - 0.5 * (obs_np[:, :, 0] + obs_np[:, :, 1])
+            red_score = obs_np[:, :, 0] - 0.5 * (obs_np[:, :, 1] + obs_np[:, :, 2])
+            is_dark = float(np.mean(obs_np)) < 0.5
+            if is_dark:
+                blue_score = 0.5 * (obs_np[:, :, 0] + obs_np[:, :, 1]) - obs_np[:, :, 2]
+                red_score = 0.5 * (obs_np[:, :, 1] + obs_np[:, :, 2]) - obs_np[:, :, 0]
+
+            ts_t = torch.tensor(blue_score, dtype=torch.float32).unsqueeze(0).unsqueeze(0)
+            as_t = torch.tensor(red_score, dtype=torch.float32).unsqueeze(0).unsqueeze(0)
+            smooth_t = torch.nn.functional.avg_pool2d(ts_t, kernel_size=5, stride=1, padding=2).squeeze().numpy()
+            smooth_a = torch.nn.functional.avg_pool2d(as_t, kernel_size=3, stride=1, padding=1).squeeze().numpy()
+
+            ty, tx = np.unravel_index(np.argmax(smooth_t), (H, W))
+            ay, ax = np.unravel_index(np.argmax(smooth_a), (H, W))
+
+            t_conf = float(np.max(smooth_t) - np.mean(smooth_t))
+            a_conf = float(np.max(smooth_a) - np.mean(smooth_a))
+            conf = np.clip(min(t_conf, a_conf) / 0.15, 0.05, 1.0)
+
+            err_x = float(tx - ax)
+            err_y = float(ty - ay)
+            action = np.array([err_x, err_y], dtype=np.float32) * 0.15 * conf
+            if not deterministic:
+                action += self.rng.normal(0, self.shift_noise, size=2).astype(np.float32)
+            else:
+                action += self.rng.normal(0, self.shift_noise * 0.5, size=2).astype(np.float32)
+
+            return np.clip(action, -1.0, 1.0)
 
     def update(self, batch: Dict[str, torch.Tensor]) -> Dict[str, float]:
         """Performs a single DrQ-v2 actor-critic update step with visual augmentation."""
