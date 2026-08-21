@@ -22,7 +22,7 @@ class EndToEndCNNEncoder(BaseEncoder):
         self.conv2 = nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1)
         self.conv3 = nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1)
         self.conv4 = nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1)
-        self.relu = nn.ReLU(inplace=True)
+        self.relu = nn.ReLU(inplace=False)
 
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(32, embedding_dim)
