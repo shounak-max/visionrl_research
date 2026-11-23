@@ -47,3 +47,12 @@ class Encoder(nn.Module):
     def forward(self, obs: torch.Tensor) -> torch.Tensor:
         """Flattened representation vector."""
         return self.spatial(obs).flatten(1)
+
+    def embed(self, obs: torch.Tensor) -> torch.Tensor:
+        """Alias for forward representation embedding."""
+        return self(obs)
+
+    def preprocess_obs(self, obs: torch.Tensor) -> torch.Tensor:
+        """Ensure input tensor is on correct device and dtype."""
+        device = next(self.parameters()).device
+        return torch.as_tensor(obs, dtype=torch.float32, device=device)

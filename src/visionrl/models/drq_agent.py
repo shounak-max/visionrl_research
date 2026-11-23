@@ -58,6 +58,18 @@ class DrQAgent:
         scaled_pad = max(2, int(round(cfg.img * 4.0 / 84.0))) if cfg.aug_pad is None else cfg.aug_pad
         self.aug = RandomShift(scaled_pad)
 
+    def eval(self):
+        self.encoder.eval()
+        self.actor.eval()
+        self.critic.eval()
+        return self
+
+    def train(self, mode: bool = True):
+        self.encoder.train(mode)
+        self.actor.train(mode)
+        self.critic.train(mode)
+        return self
+
     @torch.no_grad()
     def act(self, obs_u8: np.ndarray, noise_std: Optional[float] = None) -> np.ndarray:
         """Deterministic evaluation rule is the mean action (noise_std=None).

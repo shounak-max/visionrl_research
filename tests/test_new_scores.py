@@ -222,29 +222,34 @@ class TestGCMDrift:
 class TestRealPolicyIntegration:
 
     def test_pac_drift_with_drq_v2_policy(self):
-        """Test PAC-Drift on full DrQv2Policy architecture."""
-        from policies.drq_v2 import DrQv2Policy
-        policy = DrQv2Policy(action_dim=2, embedding_dim=128)
-        policy.eval()
+        """Test PAC-Drift on full DrQv2 policy architecture."""
+        from visionrl.config import make_cfg
+        from visionrl.models.drq_agent import DrQAgent
+        cfg = make_cfg("smoke", "pursuit")
+        agent = DrQAgent(cfg, "drqv2", 0)
+        agent.encoder.eval()
+        agent.actor.eval()
 
-        clean = torch.rand(2, 3, 32, 32)
-        shifted = torch.rand(2, 3, 32, 32)
+        clean = torch.rand(2, 9, 32, 32)
+        shifted = torch.rand(2, 9, 32, 32)
 
         scorer = PACDriftScore()
-        ident_score = scorer.compute(clean, clean, policy)
+        ident_score = scorer.compute(clean, clean, agent)
         assert ident_score < 1e-6, f"Expected near zero, got {ident_score}"
 
-        score = scorer.compute(clean, shifted, policy, lambda_val=1.0)
+        score = scorer.compute(clean, shifted, agent, lambda_val=1.0)
         assert score >= 0.0
 
     def test_gcm_drift_with_drq_v2_policy(self):
-        """Test GCM-Drift on full DrQv2Policy architecture."""
-        from policies.drq_v2 import DrQv2Policy
-        policy = DrQv2Policy(action_dim=2, embedding_dim=128)
-        policy.eval()
+        """Test GCM-Drift on full DrQv2 policy architecture."""
+        from visionrl.config import make_cfg
+        from visionrl.models.drq_agent import DrQAgent
+        cfg = make_cfg("smoke", "pursuit")
+        agent = DrQAgent(cfg, "drqv2", 0)
+        agent.encoder.eval()
 
-        frames = torch.rand(8, 3, 32, 32)
+        frames = torch.rand(8, 9, 32, 32)
         scorer = GCMDriftScore()
-        ident_score = scorer.compute(frames, frames, policy)
+        ident_score = scorer.compute(frames, frames, agent)
         assert ident_score < 1e-5, f"Expected near zero, got {ident_score}"
 

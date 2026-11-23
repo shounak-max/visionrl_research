@@ -11,9 +11,11 @@ import pytest
 import torch
 import numpy as np
 
-from ttss.adapter import TTSSAdapter
-from encoders.cnn_encoder import EndToEndCNNEncoder
-from envs.visual_pursuit import VisualPursuitEnv
+from visionrl.config import make_cfg
+from visionrl.environments import make_env
+from visionrl.models.drq_agent import DrQAgent
+from visionrl.probes.adaptation import AdaptedPolicy, clean_feature_stats
+from visionrl.probes.feature_bank import collect_clean
 
 
 def test_success_threshold_defined():
@@ -21,83 +23,62 @@ def test_success_threshold_defined():
     repo_root = Path(__file__).resolve().parent.parent
     context_file = repo_root / "CONTEXT.md"
     assert context_file.exists(), "CONTEXT.md must exist in repo root"
-    
-    # Check that VisualPursuitEnv can be initialized
-    env = VisualPursuitEnv(seed=42)
-    obs, info = env.reset()
-    assert "tracking_error_px" in info
-    assert obs.shape == (64, 64, 3)
 
-    # In Visual Pursuit tracking, successful tracking corresponds to mean CLE < 5 px
-    # (while random policy floor is ~22 px and collapse threshold is 15 px).
-    success_threshold = 5.0
-    floor_collapse_threshold = 15.0
-    random_floor = 22.0
-    assert success_threshold < floor_collapse_threshold < random_floor
+    cfg = make_cfg("smoke", "pursuit")
+    env = make_env(cfg)
+    obs, info = env.reset(seed=42)
+    assert obs.shape == (cfg.img, cfg.img, 3)
+
+    success_threshold = cfg.success_cle_px
+    random_floor = 22.05
+    collapse_threshold = cfg.collapse_frac * random_floor
+    assert success_threshold < collapse_threshold < random_floor
 
 
 def test_ttss_adapter_rollback():
-    """Create a TTSSAdapter with fake offline stats, construct a scenario where
+    """Verify that AdaptedPolicy rolls back encoder parameters on rejected update."""
+    from dataclasses import replace
+    cfg = make_cfg("smoke", "pursuit")
+    agent = DrQAgent(cfg, "drqv2", 0)
+    recs = collect_clean(agent, cfg, "ref", 2)
+    stats = clean_feature_stats(agent, recs, cfg)
+    clean_stacks = stats[2]
 
-    an adapted candidate would have worse loss, and verify rollback to original encoder.
-    """
-    dim = 512
-    offline_mean = torch.zeros(dim)
-    offline_var = torch.ones(dim)
+    # Create TTSS policy with accept_delta = 0.0 (force rejection)
+    strict_cfg = replace(cfg, tta_accept_delta=0.0)
+    pol = AdaptedPolicy(agent, strict_cfg, "ttss", (stats[0], stats[1]), clean_stacks)
 
-    # Set very large learning rate so gradient step pushes loss up
-    adapter = TTSSAdapter(
-        offline_mean=offline_mean,
-        offline_var=offline_var,
-        window_size=16,
-        lr=50.0,
-        moment_weight=10.0,
-    )
+    initial_params = [p.clone().detach() for p in pol.enc.parameters()]
+    obs = np.random.randint(0, 255, size=(3 * cfg.n_stack, cfg.img, cfg.img), dtype=np.uint8)
 
-    encoder = EndToEndCNNEncoder(embedding_dim=dim)
-    
-    # Store initial parameter snapshot
-    initial_params = [p.clone().detach() for p in encoder.parameters()]
+    # Perform action (which triggers _adapt if buffer >= 2)
+    pol.act(obs)
+    pol.act(obs)
 
-    # Out-of-distribution observation stream
-    torch.manual_seed(123)
-    obs_stream = torch.randn(16, 64, 64, 3) * 10.0
-
-    adapted_encoder, step_log = adapter.adapt(encoder, obs_stream, force_accept=False)
-
-    assert "loss_before" in step_log
-    assert "loss_after" in step_log
-    assert "accepted" in step_log
-
-    # If loss worsened, it must be rejected and parameters rolled back to exact initial state
-    if step_log["loss_after"] >= step_log["loss_before"]:
-        assert step_log["accepted"] is False
-        for p_init, p_curr in zip(initial_params, adapted_encoder.parameters()):
-            assert torch.allclose(p_init, p_curr, atol=1e-7), "Encoder params must match initial snapshot on rejection"
+    # The update was rejected
+    assert pol.rejected >= 1, "Zero-tolerance safeguard must reject update"
+    for p_init, p_curr in zip(initial_params, pol.enc.parameters()):
+        assert torch.allclose(p_init, p_curr, atol=1e-7), "Encoder params must match initial snapshot on rejection"
 
 
 def test_ttss_trust_region_rejects_bad_update():
-    """Force a scenario where candidate loss > original loss and verify accepted=False in return dict."""
-    dim = 512
-    offline_mean = torch.randn(dim)
-    offline_var = torch.ones(dim)
+    """Verify that an update causing action drift > tta_accept_delta is rejected."""
+    from dataclasses import replace
+    cfg = make_cfg("smoke", "pursuit")
+    agent = DrQAgent(cfg, "drqv2", 0)
+    recs = collect_clean(agent, cfg, "ref", 2)
+    stats = clean_feature_stats(agent, recs, cfg)
+    clean_stacks = stats[2]
 
-    adapter = TTSSAdapter(
-        offline_mean=offline_mean,
-        offline_var=offline_var,
-        window_size=16,
-        lr=100.0,
-        moment_weight=50.0,
-    )
+    # Large learning rate causes massive action drift exceeding accept_delta
+    high_lr_cfg = replace(cfg, tta_lr=10.0, tta_accept_delta=0.01)
+    pol = AdaptedPolicy(agent, high_lr_cfg, "ttss", (stats[0], stats[1]), clean_stacks)
 
-    encoder = EndToEndCNNEncoder(embedding_dim=dim)
-    torch.manual_seed(999)
-    severe_obs = torch.randn(16, 64, 64, 3) * 20.0
+    obs = np.random.randint(0, 255, size=(3 * cfg.n_stack, cfg.img, cfg.img), dtype=np.uint8)
+    pol.act(obs)
+    pol.act(obs)
 
-    _, step_log = adapter.adapt(encoder, severe_obs, force_accept=False)
-
-    if step_log["loss_after"] >= step_log["loss_before"]:
-        assert step_log["accepted"] is False, "Trust-region safeguard must reject bad updates"
+    assert pol.rejected >= 1, "Trust region safeguard must reject large deviation updates"
 
 
 def test_seed_disjointness():
