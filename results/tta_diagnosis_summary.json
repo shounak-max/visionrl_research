@@ -1,0 +1,59 @@
+{
+  "config": {
+    "img": 48,
+    "ep_len": 50,
+    "tta_lr": 0.001,
+    "tta_accept_delta": 0.2,
+    "tta_kinds": [
+      "noise",
+      "background"
+    ],
+    "tta_severities": [
+      0.6,
+      1.0
+    ],
+    "tta_eps_per_cell": 15
+  },
+  "agents": {
+    "drqv2_s0": {
+      "total_steps_evaluated": 2940,
+      "accepted_steps": 20,
+      "acceptance_rate_pct": 0.68,
+      "rejection_breakdown": {
+        "dev_exceeded_count": 2920,
+        "dev_exceeded_pct": 99.32,
+        "loss_increased_count": 11,
+        "loss_increased_pct": 0.37,
+        "both_failed_count": 11
+      },
+      "dev_distribution": {
+        "mean": 0.2859,
+        "median": 0.2854,
+        "p75": 0.2978,
+        "p90": 0.3346,
+        "max": 0.4058
+      },
+      "loss_reduction_pct_mean": 64.06
+    },
+    "svea_s0": {
+      "total_steps_evaluated": 2940,
+      "accepted_steps": 95,
+      "acceptance_rate_pct": 3.23,
+      "rejection_breakdown": {
+        "dev_exceeded_count": 2702,
+        "dev_exceeded_pct": 91.9,
+        "loss_increased_count": 354,
+        "loss_increased_pct": 12.04,
+        "both_failed_count": 211
+      },
+      "dev_distribution": {
+        "mean": 0.2482,
+        "median": 0.2533,
+        "p75": 0.2633,
+        "p90": 0.2947,
+        "max": 0.3437
+      },
+      "loss_reduction_pct_mean": 47.29
+    }
+  }
+}
