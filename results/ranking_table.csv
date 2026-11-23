@@ -1,0 +1,10 @@
+predictor,tau,regret,pred_spread,true_spread
+act_disagree,0.581,0.032,0.113,0.055
+cent_policy,0.12,0.068,0.015,0.055
+critic_gap,0.245,0.052,0.124,0.055
+knn_pixel,0.375,0.032,0.008,0.055
+knn_policy,0.347,0.028,0.118,0.055
+knn_random,0.132,0.053,0.005,0.055
+maha_policy,0.052,0.045,0.217,0.055
+q_drop,0.513,0.023,0.098,0.055
+sem_knn_policy,0.375,0.035,0.095,0.055

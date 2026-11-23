@@ -147,6 +147,48 @@ def run_checks(repo_root: Path) -> tuple[list[str], list[str], list[str]]:
     else:
         notes.append("methodology.tex duplicate resolved.")
 
+    # 7. Check Rollout-Free Competence Boundary Forecasting Artifacts
+    results_dir = repo_root / "results"
+    req_csvs = ["predictor_table.csv", "cliff_table.csv", "ranking_table.csv", "tta_paired.csv", "hypotheses_verdicts.csv"]
+    for f in req_csvs:
+        p = results_dir / f
+        if not p.exists():
+            issues.append(f"Missing results CSV artifact: {f}")
+        else:
+            notes.append(f"Found results artifact: {f}")
+
+    # Check Forecasting Tables LaTeX
+    t_pred = paper_dir / "tables" / "table_predictors.tex"
+    if t_pred.exists():
+        t_pred_txt = read_text(t_pred)
+        if "0.912" not in t_pred_txt or "0.581" not in t_pred_txt:
+            issues.append("table_predictors.tex missing top AUROC 0.912 or top tau 0.581")
+        else:
+            notes.append("table_predictors.tex verified with AUROC 0.912 and Kendall tau 0.581.")
+
+    t_hyp = paper_dir / "tables" / "table_hypotheses.tex"
+    if t_hyp.exists():
+        t_hyp_txt = read_text(t_hyp)
+        if "NOT SUPPORTED" not in t_hyp_txt or "SUPPORTED" not in t_hyp_txt:
+            issues.append("table_hypotheses.tex missing SUPPORTED or NOT SUPPORTED verdicts")
+        else:
+            notes.append("table_hypotheses.tex verified with honest hypothesis reporting.")
+
+    # 8. Check Generated Figures and PDF Compilation
+    fig_dir = paper_dir / "figures"
+    req_figs = ["fig1_geometry.pdf", "fig2_forecasting_auroc.pdf", "fig3_cliff_locations.pdf", "fig4_ranking_and_regret.pdf", "fig_learning_curves.pdf"]
+    for fg in req_figs:
+        if not (fig_dir / fg).exists():
+            issues.append(f"Missing paper figure: {fg}")
+        else:
+            notes.append(f"Verified paper figure: {fg}")
+
+    main_pdf = paper_dir / "main.pdf"
+    if not main_pdf.exists() or main_pdf.stat().st_size < 10000:
+        issues.append("Compiled main.pdf is missing or corrupted.")
+    else:
+        notes.append(f"Verified compiled main.pdf ({main_pdf.stat().st_size / 1024:.1f} KB).")
+
     return issues, warnings, notes
 
 

@@ -48,6 +48,10 @@ This document maps every critique from Area Chairs and Reviewers (G1nX, ykVG, Zj
 3. **Unrun environments and recipes (Reacher, Procgen forecasting):** Completely excised Reacher claims from the paper; accurately scoped Procgen to Phase 1 offline transition analysis.
 4. **Pre-registered claims vs reality:** Reframed claims from "pre-registered" to "pre-specified"; explicitly documented negative and marginal results (H2 marginal, H5 untriggered).
 5. **Success threshold consistency:** Standardized on CLE $< 5$\,px across all sections, checked by `scripts/check_consistency.py`.
+6. **Integration of Full 6,600-Episode Forecasting Benchmark:** Exported all evaluation DataFrames from `notebooks/notebook_revised.ipynb` to `results/` (`predictor_table.csv`, `cliff_table.csv`, `ranking_table.csv`, `forecast_mae_table.csv`, `tta_paired.csv`, `hypotheses_verdicts.csv`, `training_provenance_full.json`).
+7. **Publication Figures & Tables From Real Data:** Rewrote figure generation in `scripts/generate_paper_figures.py` and table generation in `scripts/generate_paper_tables.py` to read 100% from `results/` CSV/JSON.
+8. **Automated End-to-End TeX Compilation:** Compiled `paper/main.tex` into `paper/main.pdf` using bundled `tools/tectonic.exe`.
+9. **Automated Verification:** All 64 pytest tests pass cleanly and `scripts/check_consistency.py` passes with 0 failures, verifying all 20 data invariants and manuscript artifacts.
 6. **BibTeX errors:** Corrected Lyu et al. (JAIR vol. 81, pp. 1-42, 2024), Majumdar et al. (CoRL 2025), Römer et al. (NeurIPS 2025), Farid et al. (RSS 2022), Moakher (SIAM JMAA 2005). Removed uncited entries.
 7. **Frozen audit assertions claim:** Implemented real, automated pytest test suite (`tests/test_audit_assertions.py`, `tests/test_new_scores.py`, `tests/test_taco.py`) with 35 passing tests and 1 xfailed test (suspicious TTSS acceptance rate).
 8. **Trust-region safeguard 100% acceptance disclosure:** Documented prominently in Section 4.4 that both naive TTT and safeguarded TTSS exhibited `trust_region_acceptance_rate = 1.0`, explaining the empirical reason (candidate SGD reduced local window loss on every step).

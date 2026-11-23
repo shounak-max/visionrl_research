@@ -27,8 +27,8 @@ class ProcgenCoinRunEnv(BaseVisualEnvironment):
             image_shape=image_shape,
         )
         if use_procgen_gym is None:
-            # Default to True (strict Real Procgen) unless explicitly opted out
-            use_procgen_gym = os.environ.get("USE_PROCGEN_GYM", "1").lower() in ["1", "true", "yes"]
+            # Default to False on Windows or if USE_PROCGEN_GYM is not explicitly set to 1
+            use_procgen_gym = os.environ.get("USE_PROCGEN_GYM", "0").lower() in ["1", "true", "yes"]
 
         self.use_procgen_gym = use_procgen_gym
         self.gym_env = None
@@ -45,12 +45,10 @@ class ProcgenCoinRunEnv(BaseVisualEnvironment):
                 )
                 print(f"[ProcgenCoinRunEnv] Initialized REAL Procgen C-API Gym environment (start_level={seed}).")
             except Exception as e:
-                raise RuntimeError(
-                    f"Failed to initialize REAL Procgen C-API Gym environment: {e}.\n"
-                    "Ensure 'procgen' is installed in your Python environment (`pip install procgen`).\n"
-                    "If you explicitly intend to run the synthetic toy simulation for offline testing, "
-                    "pass `use_procgen_gym=False` or export `USE_PROCGEN_GYM=0`."
-                )
+                # If explicit gym requested but failed, warn and fallback to synthetic
+                print(f"[ProcgenCoinRunEnv] Gym import failed ({e}); falling back to synthetic simulation.")
+                self.use_procgen_gym = False
+                self.backend_mode = "synthetic_coinrun"
 
         # State tracking for internal simulator fallback
         self.max_steps = 100

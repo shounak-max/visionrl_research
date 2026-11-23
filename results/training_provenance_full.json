@@ -1,0 +1,97 @@
+{
+  "task": "Visual Pursuit (continuous control)",
+  "frame": "48x48 RGB, 3-frame stack",
+  "episode_length": 50,
+  "success_criterion": "episode-mean CLE < 5.0 px",
+  "random_floor_cle_px": 22.05,
+  "collapse_threshold_px": 17.64,
+  "total_training_steps_per_seed": 50000,
+  "recipes": {
+    "drqv2": {
+      "description": "Standard DrQ-v2 with random shift augmentation on both actor and critic",
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "final_eval": [
+        {
+          "seed": 0,
+          "steps": 50000,
+          "success": 0.8,
+          "cle_px": 3.43,
+          "return": -7.14
+        },
+        {
+          "seed": 1,
+          "steps": 50000,
+          "success": 0.8,
+          "cle_px": 3.48,
+          "return": -7.24
+        },
+        {
+          "seed": 2,
+          "steps": 50000,
+          "success": 0.8,
+          "cle_px": 3.62,
+          "return": -7.54
+        }
+      ]
+    },
+    "svea": {
+      "description": "SVEA decoupled loss (critic trained on clean + augmented, actor trained on clean only)",
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "alpha": 0.5,
+      "beta": 0.5,
+      "final_eval": [
+        {
+          "seed": 0,
+          "steps": 50000,
+          "success": 0.6,
+          "cle_px": 4.55,
+          "return": -9.47
+        },
+        {
+          "seed": 1,
+          "steps": 50000,
+          "success": 0.8,
+          "cle_px": 4.32,
+          "return": -9.0
+        },
+        {
+          "seed": 2,
+          "steps": 50000,
+          "success": 0.7,
+          "cle_px": 4.2,
+          "return": -8.75
+        }
+      ]
+    }
+  },
+  "total_eval_episodes": 6600,
+  "shift_kinds": [
+    "background",
+    "noise",
+    "distractor",
+    "viewpoint",
+    "color_gain"
+  ],
+  "severities": [
+    0.0,
+    0.1,
+    0.2,
+    0.3,
+    0.4,
+    0.5,
+    0.6,
+    0.7,
+    0.8,
+    0.9,
+    1.0
+  ],
+  "episodes_per_cell": 20
+}
