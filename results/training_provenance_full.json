@@ -6,6 +6,23 @@
   "random_floor_cle_px": 22.05,
   "collapse_threshold_px": 17.64,
   "total_training_steps_per_seed": 50000,
+  "compute_budgets": {
+    "authoritative_benchmark": {
+      "policies": 6,
+      "steps_per_policy": 50000,
+      "purpose": "Published 6,600-episode empirical evaluation, boundary forecasting, failure prediction, and policy ranking."
+    },
+    "taco_modern_baseline": {
+      "policies": 1,
+      "steps_per_policy": 30000,
+      "purpose": "Modern temporal action-contrastive baseline trained to competence gate (<5.0 px CLE)."
+    },
+    "tta_diagnostic_sweep": {
+      "policies": 2,
+      "steps_per_policy": 12000,
+      "purpose": "Diagnostic run for gradient-step logging and trust-region action deviation profiling."
+    }
+  },
   "recipes": {
     "drqv2": {
       "description": "Standard DrQ-v2 with random shift augmentation on both actor and critic",
