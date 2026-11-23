@@ -22,6 +22,7 @@ class PPOAgent(nn.Module):
         )
         self.pi = nn.Linear(feature_dim, n_actions)
         self.v = nn.Linear(feature_dim, 1)
+        self.to(get_device())
 
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         z = self.trunk(self.encoder(x))
@@ -32,7 +33,7 @@ class PPOAgent(nn.Module):
         """rule is explicit: 'greedy' (argmax) or 'sampled'.
         Evaluate and REPORT both (the action rule decides which policy is measured).
         """
-        device = get_device()
+        device = next(self.parameters()).device
         logits, _ = self(torch.as_tensor(obs_u8, dtype=torch.float32, device=device).unsqueeze(0))
         if rule == "greedy":
             return int(logits.argmax(-1))
