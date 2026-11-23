@@ -67,9 +67,9 @@ class Cfg:
     tta_kinds: tuple = ("background", "noise")
     tta_severities: tuple = (1.0,)
     tta_eps: int = 6
-    tta_lr: float = 1e-4
+    tta_lr: float = 3e-4
     tta_mm_weight: float = 1.0
-    tta_accept_delta: float = 0.15
+    tta_accept_delta: float = 0.40
     tta_buffer: int = 8
     tta_clean_batch: int = 32
     tta_agents: int = 99             # run the (slow, secondary) TTA study on the first N agents only
@@ -111,7 +111,7 @@ def _make_cfg(mode: str, env: str = "pursuit") -> Cfg:
             agent_seeds=(0, 1, 2, 3, 4), severities=tuple(np.round(np.linspace(0, 1, 11), 2)),
             eps_per_cell=100, ref_eps=60, ref_max_rows=4000, frame_stride=5,
             grassmann_ks=(5, 10, 20), boot_B=2000, cal_clean_eps=200, tta_eps=100,
-            tta_severities=(0.6, 0.8, 1.0), tta_agents=5, tta_lr=1e-3
+            tta_severities=(0.6, 0.8, 1.0), tta_agents=5, tta_lr=3e-4, tta_accept_delta=0.40
         )
     raise ValueError(f"Unknown mode: {mode}")
 
