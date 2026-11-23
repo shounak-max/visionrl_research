@@ -55,6 +55,9 @@ class AdaptedPolicy:
         self.buf = collections.deque(maxlen=self.cfg.tta_buffer)
         self.accepted = 0
         self.rejected = 0
+        self.rejected_loss_inc = 0
+        self.rejected_dev_exceeded = 0
+        self.step_diagnostics = []
 
     def _mm(self, x: torch.Tensor) -> torch.Tensor:
         sp = self.enc.spatial(x)
@@ -79,12 +82,28 @@ class AdaptedPolicy:
             after = float(self._mm(xb))
             dev = float((self.actor(self.enc(self.cx)) - self.a_base).norm(dim=1).mean())
 
-        if after < before and dev <= self.cfg.tta_accept_delta:
+        loss_ok = bool(after < before)
+        dev_ok = bool(dev <= self.cfg.tta_accept_delta)
+
+        self.step_diagnostics.append(dict(
+            before=before,
+            after=after,
+            dev=dev,
+            loss_ok=loss_ok,
+            dev_ok=dev_ok,
+            accepted=bool(loss_ok and dev_ok),
+        ))
+
+        if loss_ok and dev_ok:
             self.accepted += 1
         else:
             self.enc.load_state_dict(snap)
             self.opt.load_state_dict(opt_state)
             self.rejected += 1
+            if not loss_ok:
+                self.rejected_loss_inc += 1
+            if not dev_ok:
+                self.rejected_dev_exceeded += 1
 
     def act(self, obs_u8: np.ndarray) -> np.ndarray:
         x = torch.as_tensor(obs_u8, dtype=torch.float32, device=self.device).unsqueeze(0)
@@ -129,6 +148,8 @@ def run_tta(
                         collapse=is_collapse(r["mean_cle"], cfg, floor),
                         accepted=pol.accepted,
                         rejected=pol.rejected,
+                        rejected_loss_inc=pol.rejected_loss_inc,
+                        rejected_dev_exceeded=pol.rejected_dev_exceeded,
                     ))
     return pd.DataFrame(rows)
 
