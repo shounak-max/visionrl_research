@@ -1,3 +1,13 @@
+<!--
+================================================================================
+SUPERSEDED HISTORICAL DRAFT
+This markdown file is an archival snapshot of an earlier rejected conference draft.
+All claims, numbers, and methods herein are superseded by the authoritative paper
+in paper/ (main.pdf) and verified experiment outputs in results/.
+DO NOT CITE OR READ NUMBERS FROM THIS ARCHIVAL DRAFT.
+================================================================================
+-->
+
 ## Diagnosing Generalization Collapse and Reward-Hacking Failure Modes in Vision-Based Reinforcement Learning: A Standardized Benchmark Suite
 
 Submission Id XYZW

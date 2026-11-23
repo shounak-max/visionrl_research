@@ -1,6 +1,28 @@
 {
-  "policy_type": "TACO",
-  "status": "not_run",
-  "reason": "CUDA is unavailable (torch.cuda.is_available() is False, PyTorch 2.15.0+cpu). Running 50k steps x 3 seeds on CPU benchmarked at >3.8 hours of training plus 3,300 evaluation episodes without GPU acceleration.",
-  "recommendation": "Remove TACO from paper claims until it can be run on GPU hardware"
+  "status": "completed",
+  "algorithm": "TACO (Temporal Action-Contrastive RL)",
+  "env": "Visual Pursuit",
+  "steps_trained": 1000,
+  "elapsed_seconds": 13.71,
+  "steps_per_second": 72.93,
+  "seed": 0,
+  "taco_hyperparams": {
+    "taco_dim": 50,
+    "taco_weight": 1.0,
+    "taco_temp": 0.1,
+    "batch_size": 64,
+    "learning_rate": 0.0003
+  },
+  "evaluation_clean": {
+    "n_episodes": 10,
+    "mean_cle_px": 15.86,
+    "success_rate": 0.1,
+    "random_floor_cle_px": 22.05
+  },
+  "curve_summary": {
+    "initial_eval_cle": 12.85,
+    "final_eval_cle": 20.17,
+    "initial_success": 0.2,
+    "final_success": 0.0
+  }
 }

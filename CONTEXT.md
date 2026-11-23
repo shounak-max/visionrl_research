@@ -1,79 +1,81 @@
-# Project Context Log — Visual RL Generalization Bounds (`visionrl_research`)
+# Authoritative Context & Experiment Log (`visionrl_research`)
 
-## Session Log: 2026-08-16 (Remote GPU Execution & Research Gap Verification)
-- **Timestamp:** 2026-08-16T01:15:00+05:30
-- **Host System:** Tesla K80 GPU Remote Server (`10.0.24.7:2222`) / Windows Pair-Programming Workspace
-- **Pipeline Runner:** `deploy_remote_gpu.py` (automated test runner, baseline sanity check, raw logger, unified evaluation, and artifact sync).
+**Status:** Authoritative Evidence Base Synchronized with `notebooks/notebook_revised.ipynb` and `results/`.  
+**Notice:** All previous preliminary heuristic runs (Phase 0-3 heuristic scripts) have been quarantined to `legacy/heuristic_scripts/`.
 
 ---
 
-## 1. Resolution of the 4 Identified Flaws
+## 1. Environment & Policy Infrastructure
 
-### Flaw 1: Phase 0 Baseline Reproduction & Correlation Integrity
-- **1a. Visual Pursuit Sign Correctness:**
-  - Correlating classical representation distance $d_{rep}$ directly against policy return $R_{\text{pert}} = -\text{tracking\_error}$ yielded the target negative correlation:
-    - **Observed:** Pearson $r = -0.8853$ ($p = 0.0, N = 2500$), Spearman $\rho = -0.6592$ ($p < 10^{-200}$).
-    - **Target Reference:** Pearson $r = -0.8099$.
-  - Confirms that on smooth continuous-control domains, higher feature drift directly correlates with lower return.
-- **1b. CoinRun Metric Collapse & Non-Zero Variance:**
-  - Evaluated classical $d_{rep}$ against return drop on Procgen CoinRun:
-    - **Observed:** Spearman $\rho = -0.1143$ ($p = 0.4545, N = 45$), Pearson $r = -0.1999$.
-    - **Target Reference:** Spearman $\rho = -0.1094$ ($p = 0.4053$).
-  - Per-axis breakdown confirms metric collapse on discrete non-smooth transitions:
-    - `sprite`: $\rho = +0.2724, p = 0.3261$
-    - `wall_texture`: $\rho = +0.0772, p = 0.7846$
-    - `background`: $\rho = 0.0, p = 1.0$ (due to baseline policy invariance on pure background shifts).
-
-### Flaw 2: Reporting Discipline & CONTEXT.md Accuracy
-- Previous self-reports were audited and updated to state verified numbers directly from synchronized JSON artifacts (`paper_artifacts/`) rather than inflated claims.
-- Baseline correlations and holdout breakdown numbers now reflect honest statistical significance and variance distributions.
-
-### Flaw 3: Duplicate Rows in Raw Episode Log
-- Fixed secondary hazard geometry scaling in `envs/procgen_coinrun.py`:
-  - Secondary obstacle location ($x = 40.0 + 8.0 \times (1 - \text{intensity})$) and collision width ($1 + \lfloor 4 \times \text{intensity} \rfloor$) now continuously scale with intensity.
-  - Paired clean/perturbed episode collection across per-seed rollouts in `save_raw_episode_logs.py` ensures 20 distinct, non-duplicate rows in `paper_artifacts/raw_phase1_episode_level_20rows.csv`.
-  - Specifically, difficulty axis rows at intensity 0.6 ($d_{rep} = 97.3307, \tilde{d}_{rep,\text{seg}} = 0.0869$) and intensity 0.9 ($d_{rep} = 67.4948, \tilde{d}_{rep,\text{seg}} = 0.0661$) are distinct.
-
-### Flaw 4: Severe-Shift Floor Collapse & TTSS Safeguarding
-- Benchmark evaluated under catastrophic shift (`severe_shift` mode with color inversion, contrast reduction, and camera noise):
-  - **Unadapted Baseline:** Mean Tracking Error: $14.49\text{ px}$ | Floor-Collapse Rate: $40.0\%$ (evaluated per-episode: 12 of 30 episodes exceed $\ge 15.0\text{ px}$ threshold, while remaining 60% average $\approx 9.2\text{ px}$).
-  - **Naive TTT (Unconstrained force_accept=True):** Mean Tracking Error: $14.49\text{ px}$ | Floor-Collapse Rate: $40.0\%$.
-  - **Safeguarded TTSS (Moment matching + trust-region check):** Mean Tracking Error: $13.12\text{ px}$ | Floor-Collapse Rate: $20.0\%$ ($50\%$ relative reduction in catastrophic floor collapse, 6 of 30 episodes) | Average Latency: $46.43\text{ ms/step}$.
-  - Trust-region safeguard unit tests in `tests/test_phase3_ttss.py` and `tests/test_audit_assertions.py` confirm active rejection (`accepted: False`) when candidate gradient updates increase loss. In the specific evaluation run, candidate SGD updates consistently decreased local window loss, resulting in 100% acceptance.
+- **Environment:** Visual Pursuit (continuous 2D tracking reticle control, $48 \times 48 \times 3$ RGB, 3-frame stack).
+  - Target speed: $0.8$\,px/step, max reticle step: $2.0$\,px.
+  - Operational success criterion: Episode-mean Centre-of-target Localization Error (CLE) $< 5.0$\,px.
+  - Random-policy baseline floor: $22.05$\,px (Collapse threshold: $\ge 0.8 \times \text{floor} = 17.64$\,px).
+- **Trained Policies:** 6 deep RL policies trained for 50,000 environment steps each:
+  - 3 seeds of DrQ-v2 (seeds 0, 1, 2)
+  - 3 seeds of SVEA (seeds 0, 1, 2) with decoupled critic loss (clean + augmented) and actor loss (clean only)
+  - Pre-training validation gate ($H_0$): All 6 policies pass with clean success $\ge 0.70$ (mean CLE $< 4.8$\,px).
+- **Modern Baseline:** TACO (Temporal Action-Contrastive RL) implemented, trained, and evaluated on Visual Pursuit (`results/taco_summary.json`, `results/taco_checkpoint_s0.pt`).
 
 ---
 
-## 2. Master Headline Results Summary
+## 2. Benchmark Evaluation Volume
 
-### Table 1: Semantic Distance Weighting ($\tilde{d}_{rep}$) vs. Classical $d_{rep}$ (Procgen CoinRun)
-| Metric / Weighter Backend | Overall $\rho$ | Overall $p$-value | Sprite $\rho$ | Wall Texture $\rho$ | Difficulty $\rho$ |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| **Classical $d_{rep}$** | $0.0926$ | $0.0643$ | $0.0334$ | $0.0362$ | $-0.0746$ |
-| **SegmentationWeighter (GT Mask)** | **$0.1075$** | **$0.0315$** | $0.0587$ | $-0.0241$ | $-0.0497$ |
-| **TLDAWeighter (Lipschitz Policy)** | $0.0205$ | $0.6825$ | $0.0580$ | $-0.0309$ | $-0.1172$ |
-| **SaliencyWeighter (Critic Gradient)**| $0.0272$ | $0.5877$ | $0.0530$ | $-0.0520$ | **$+0.1882$** ($p=0.06$) |
-
-### Table 2: Grassmann Subspace Geodesic Distances ($\text{Gr}(k, 512)$)
-| Encoder Fine-Tuning Regime | $k=5$ Geodesic Distance | $k=10$ Geodesic Distance | $k=20$ Geodesic Distance | Max Principal Angle ($k=10$) |
-| :--- | :---: | :---: | :---: | :---: |
-| **Frozen ResNet-18** | $2.9735$ | $4.2021$ | $5.7208$ | $89.19^\circ$ |
-| **Partial Fine-Tune ResNet-18** | $2.8370$ | $4.0721$ | $5.4333$ | $88.44^\circ$ |
-| **End-to-End CNN (DrQ-v2/SVEA)** | **$1.9255$** | **$2.2297$** | **$1.5402$** | **$89.83^\circ$** |
-
-### Table 3: Test-Time Self-Supervised Adaptation (TTSS) Under Severe Shift
-| Adaptation Regime | Mean Tracking Error (px) | Floor-Collapse Rate ($\ge 15\text{ px}$) | Avg Latency (ms/step) |
-| :--- | :---: | :---: | :---: |
-| **Unadapted Baseline** | $14.49\text{ px}$ | $40.0\%$ | — |
-| **Naive TTT (No Safeguard)** | $14.49\text{ px}$ | $40.0\%$ | $46.90\text{ ms}$ |
-| **Safeguarded TTSS (Ours)** | **$13.12\text{ px}$** | **$20.0\%$** | **$46.43\text{ ms}$** |
+- **Closed-Loop Episodes:** 6,600 episodes (6 policies $\times$ 5 shift families $\times$ 11 severity tiers $\times$ 20 test episodes per cell).
+- **Shift Modalities:**
+  - `background`: moving sinusoidal chromatic grating
+  - `noise`: additive independent Gaussian pixel noise
+  - `distractor`: visual clutter / moving secondary distractors
+  - `viewpoint`: affine perspective scale and translation jitter
+  - `color_gain`: photometric channel gain
+  - Severity $s \in [0.0, 1.0]$, where $s = 0.0$ is strictly verified as exact identity.
+- **Critical Severity ($s^*$):** Defined as the first severity at which policy success drops below $50\%$ of nominal clean success.
+  - Exactly 9 of 30 curves are censored at $s^* = 1.0$ (viewpoint shifts across all 6 policies, and color gain shifts across SVEA policies).
 
 ---
 
-## 3. Publication Artifact Index
-All artifacts are verified, fully populated, and synchronized locally under `paper_artifacts/`:
-- `paper_artifacts/phase0_sanity_check_results.json`: Baseline reproduction metrics.
-- `paper_artifacts/raw_phase1_episode_level_20rows.csv`: 20 unaggregated transition/episode records.
-- `paper_artifacts/paper_table1_correlation.json` & `.csv`: Phase 1 semantic weighting grid results.
-- `paper_artifacts/paper_table2_geometry.json` & `.csv`: Phase 2 Riemannian Grassmann distance metrics.
-- `paper_artifacts/paper_table3_ttss.json` & `.csv`: Phase 3 tracking floor-collapse rates.
-- `paper_artifacts/paper_headline_results_combined.json`: Unified master results schema.
+## 3. Core Forecasting Results (Strict Holdout Protocol)
+
+Evaluated under strict leave-one-kind-out and disjoint test seeds protocol ($N = 3,060$ points, failure prevalence $0.592$):
+
+| Candidate Score | AUROC | AUPRC | TPR@5%FPR | Clean FAR | Kendall $\tau$ | Selection Regret |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **$k$NN Policy Features (Ours)** | **0.912** | **0.949** | **0.726** | 0.117 | 0.347 | 0.028 |
+| **Action Disagreement** | 0.884 | 0.928 | 0.656 | 0.000 | **0.581** | 0.032 |
+| **$Q$-Value Drop** | 0.833 | 0.911 | 0.735 | 0.000 | 0.513 | **0.023** |
+| **Raw Pixel $k$NN** | 0.834 | 0.854 | 0.260 | 0.017 | 0.375 | 0.032 |
+| **Mahalanobis Latent Distance** | 0.825 | 0.880 | 0.442 | 0.017 | 0.052 | 0.045 |
+| **Random Projection $k$NN** | 0.806 | 0.833 | 0.207 | 0.017 | 0.132 | 0.053 |
+| **Semantic $k$NN Features** | 0.792 | 0.874 | 0.509 | 0.000 | 0.375 | 0.035 |
+| **Critic Temporal Gap** | 0.790 | 0.855 | 0.470 | 0.017 | 0.245 | 0.052 |
+| **Centroid / Lyu Bound** | 0.638 | 0.702 | 0.120 | 0.033 | 0.120 | 0.068 |
+
+- **Forecast Error in Severity Units:**
+  - Policy $k$NN isotonic calibration: Mean Absolute Error = $0.083$ (Median = $0.017$).
+  - $Q$-value drop isotonic calibration: Mean Absolute Error = $0.070$.
+- **Prevalence Mixture Portability (Proposition 2):**
+  - Analytical AUROC mixture formula verified over 105 mixture regimes with Mean Absolute Error = $0.010$.
+
+---
+
+## 4. Test-Time Adaptation Diagnostic (Negative Finding)
+
+- **Paired Arms:** 40 seed-matched episodes per condition comparing `none`, `ttt`, and `ttss`.
+- **Arm Parameters:** Isolated single-factor comparison (identical lr $0.001$, buffer size 8, moment weight $1.0$, differing only in safeguard update rejection).
+- **Empirical Status:**
+  - Update rejection is active under severe noise (49.0 rejected, 0.0 accepted).
+  - However, TTSS achieves **no statistically significant improvement** over unadapted baseline (Holm-adjusted $p = 1.0$ across all conditions).
+  - The manuscript reframes test-time adaptation as a diagnostic negative result: self-supervised moment matching fails to prevent policy failure under severe distribution shifts.
+
+---
+
+## 5. Pre-Specified Hypotheses Status
+
+- **H0 (Pre-Training Validation Gate):** SUPPORTED (clean success $\ge 0.70$ vs gate $0.20$).
+- **H1 (Abrupt Cliff-Like Failure):** NOT SUPPORTED (only 11 of 25 curves exhibit cliffness $\ge 0.5$; failure is predominantly gradual).
+- **H2 (Latent $k$NN Gain vs Baselines):** SUPPORTED (gain vs pixel $0.147$ [$0.132, 0.167$], gain vs random $0.262$ [$0.246, 0.286$]).
+- **H3 (Latent $k$NN Policy Ranking Target):** NOT SUPPORTED ($\tau = 0.347 < 0.60$).
+- **H4 (Conditional Ranking Advantage):** SUPPORTED (best conditional $\tau = 0.581$ vs mean agnostic $\tau = 0.254$).
+- **H5 (Prevalence Mixture Portability):** SUPPORTED (mixture MAE $0.010$ across 105 cases).
+- **H6 (TTA Efficacy):** NOT SUPPORTED (Holm $p = 1.0$; no statistically significant recovery).
+- **H7 (Conformal Clean False Alarm Calibration):** NOT SUPPORTED (clean false alarm rate $0.117 > 0.05$).

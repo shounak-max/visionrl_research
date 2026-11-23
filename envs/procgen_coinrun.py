@@ -272,8 +272,8 @@ class ProcgenCoinRunEnv(BaseVisualEnvironment):
         return obs.astype(np.float32)
 
     def _extract_gym_mask(self, obs: np.ndarray) -> np.ndarray:
-        """Extracts ground-truth hazard/entity mask from Procgen observation or asset layer."""
-        # Color thresholding heuristic for real Procgen frame
+        """Heuristic color-thresholding mask (ad-hoc RGB threshold, not simulator ground-truth)."""
+        # Color thresholding heuristic for real Procgen frame (ad-hoc red hazard detector)
         mask = np.zeros(obs.shape[:2], dtype=np.float32)
         # Red hazard channel dominance check
         is_red = (obs[:, :, 0] > 0.6) & (obs[:, :, 1] < 0.25) & (obs[:, :, 2] < 0.25)

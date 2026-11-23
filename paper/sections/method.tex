@@ -1,100 +1,84 @@
 \section{Methodology}
 \label{sec:method}
 
-In this section, we present the mathematical and algorithmic formulation of our visual representation metrics, geometric manifold embeddings, and test-time adaptation framework.
+In this section, we formalize the rollout-free competence boundary forecasting setting, define the candidate forecasting rules, present the theoretical properties of policy-conditional versus policy-agnostic metrics, and detail our test-time adaptation diagnostic protocol.
 
 \subsection{Environment and Problem Setting}
 \label{sec:method:env}
 
-We evaluate policies in a visual continuous control benchmark: \textbf{Visual Pursuit}. 
-In this domain, the agent receives high-dimensional pixel observations $x_t \in \mathbb{R}^{64 \times 64 \times 3}$ and emits continuous 2D velocity actions $a_t = (\Delta x, \Delta y) \in [-1, 1]^2$ to control a tracking reticle toward a dynamically moving target on a 2D plane.
+We evaluate policies in continuous visual control on the \textbf{Visual Pursuit} domain.
+The agent receives high-dimensional pixel observations $x_t \in \mathbb{R}^{48 \times 48 \times 3}$ (constructed from a 3-frame stack of $48 \times 48$ RGB frames) and emits continuous 2D velocity actions $a_t = (\Delta x, \Delta y) \in [-1, 1]^2$ to control a tracking reticle toward a dynamically moving target.
+The target moves with velocity $v_{\mathrm{target}} = 0.8$\,px/step, and the reticle has a maximum displacement of $2.0$\,px/step.
 The instantaneous task reward is the negative Centre-of-target Localization Error (CLE):
 \begin{equation}
     r_t = - \|p_{\mathrm{reticle}, t} - p_{\mathrm{target}, t}\|_2.
 \end{equation}
-An episode is classified as successful if the episode-mean CLE remains strictly below $5.0$\,pixels (whereas an untrained random policy produces a baseline tracking error of $\approx 22.0$\,px).
+An episode is classified as successful if the episode-mean CLE remains strictly below $5.0$\,pixels (relative to an unguided random policy baseline of $22.05$\,px).
 
-We evaluate visual policies trained with DrQ-v2~\citep{yarats2021drqv2} and SVEA~\citep{hansen2021svea} across three perturbation regimes:
-photometric shifts (brightness, contrast, hue variations), sensor camera noise, and severe compounding shifts (simultaneous contrast degradation, color inversion, and Gaussian noise).
+\paragraph{Controlled Visual Shift Modalities.}
+To model realistic perceptual distribution shifts, we evaluate 5 parameterized physical shift families $T_s^\kappa$ with severity $s \in [0.0, 1.0]$, where $s = 0.0$ is strictly verified as the exact identity transformation ($T_0^\kappa = \mathrm{id}$):
+\begin{enumerate}
+    \item \textbf{Background ($\kappa = \text{background}$):} Moving procedural sinusoidal chromatic grating.
+    \item \textbf{Sensor Noise ($\kappa = \text{noise}$):} Additive independent Gaussian pixel noise $\mathcal{N}(0, \sigma^2(s))$.
+    \item \textbf{Distractors ($\kappa = \text{distractor}$):} Moving secondary distractors and visual clutter in the arena.
+    \item \textbf{Viewpoint Jitter ($\kappa = \text{viewpoint}$):} Affine perspective scale and camera translation shifts.
+    \item \textbf{Photometric Gain ($\kappa = \text{color\_gain}$):} Channel-wise photometric color scaling.
+\end{enumerate}
 
-\subsection{Classical Representation Distance \texorpdfstring{$d_\mathrm{rep}$}{d\_rep}}
-\label{sec:method:drep}
+\paragraph{Information Constraint.}
+Let $\pi$ be a trained policy. A rollout-free forecaster $\mathcal{F}$ receives the policy's weights, a clean reference dataset $\mathcal{D}_0$ collected at severity $s = 0.0$, and the ability to render corruptions $T_s^\kappa$ on recorded clean frames.
+Crucially, $\mathcal{F}$ receives \textbf{zero rollouts under any shifted condition} ($s > 0$).
+Its objective is to predict the critical corruption severity $s^*_{\pi, \kappa}$ at which the policy's success rate drops below $50\%$ of its nominal clean performance.
 
-Let $\phi: \mathcal{X} \to \mathbb{R}^D$ denote a visual feature encoder mapping raw images to $D$-dimensional latent vectors. Given an offline clean observation distribution $\mathcal{D}_{\mathrm{clean}}$ and an unlabelled target observation distribution $\mathcal{D}_{\mathrm{pert}}$, the classical representation drift is defined as the mean pairwise Euclidean distance:
+\subsection{Candidate Rollout-Free Forecasters}
+\label{sec:method:forecasters}
+
+Let $\phi: \mathcal{X} \to \mathbb{R}^D$ denote the policy's visual feature encoder ($D = 50$). Given clean frames $x \sim \mathcal{D}_0$ and synthetic shifted frames $x' = T_s^\kappa(x)$, we evaluate nine candidate scoring functions:
+\begin{enumerate}
+    \item \textbf{Policy Feature $k$NN (\texttt{knn\_policy}):} Mean Euclidean distance to the $k = 5$ nearest neighbors in the clean latent feature bank $\mathcal{B}_{\mathrm{clean}} = \{\phi(x_i)\}_{i=1}^M$:
+    \begin{equation}
+        S_{\mathrm{knn\_pol}}(x') = \frac{1}{k} \sum_{j \in \mathrm{NN}_k(\phi(x'), \mathcal{B}_{\mathrm{clean}})} \|\phi(x') - \phi(x_j)\|_2.
+    \end{equation}
+    \item \textbf{Mahalanobis Latent Distance (\texttt{maha\_policy}):} Distance scaled by the clean feature covariance matrix $\Sigma$:
+    \begin{equation}
+        S_{\mathrm{maha}}(x') = \sqrt{(\phi(x') - \mu)^\top \Sigma^{-1} (\phi(x') - \mu)}.
+    \end{equation}
+    \item \textbf{Centroid / Lyu Bound (\texttt{cent\_policy}):} Distance to the clean feature mean centroid: $\|\phi(x') - \mu_{\mathrm{clean}}\|_2$, representing the empirical probe motivated by Lyu et al.~\citep{lyu2024generalization}.
+    \item \textbf{Action Disagreement (\texttt{act\_disagree}):} Divergence between actions output by the policy under perturbed vs clean observations: $\|\pi(x') - \pi(x)\|_2$.
+    \item \textbf{$Q$-Value Drop (\texttt{q\_drop}):} Expected reduction in critic value: $Q_\theta(\phi(x), \pi(x)) - Q_\theta(\phi(x'), \pi(x'))$.
+    \item \textbf{Critic Temporal Gap (\texttt{critic\_gap}):} Bellman residual error of the critic evaluated on perturbed transitions without reward updates.
+    \item \textbf{Raw-Pixel $k$NN (\texttt{knn\_pixel}):} $k$NN distance evaluated directly in normalized flattened pixel space.
+    \item \textbf{Random Projection $k$NN (\texttt{knn\_random}):} $k$NN distance evaluated after projection through a fixed, untrained random Gaussian matrix $R \in \mathbb{R}^{D \times d_{\mathrm{pix}}}$.
+    \item \textbf{Semantic $k$NN Features (\texttt{sem\_knn\_policy}):} Latent $k$NN distance weighted by spatial action gradients.
+\end{enumerate}
+
+\paragraph{Isotonic Calibration Protocol.}
+Continuous boundary forecasts $\hat{s}_{\pi, \kappa}$ are obtained via leave-one-kind-out isotonic regression: for each target shift kind $\kappa$, the calibration mapping $S \mapsto \hat{s}$ is fit strictly on the remaining four shift kinds across clean calibration seeds, ensuring completely held-out evaluation.
+
+\subsection{Theoretical Foundations}
+\label{sec:method:theory}
+
+\begin{proposition}[Identifiability Limitation of Policy-Agnostic Scores]
+\label{prop:identifiability}
+Let $D$ be any observation score computed from clean and shifted observation laws $(P_0, P_s)$ without access to policy weights $\pi$. Suppose shift component $z$ takes a fixed value $z_0$ in clean observations. Then for any $s_0 \in (0, 1)$, there exist two policies $\pi_a, \pi_b$ with identical clean behavior such that $s^*_{\pi_a} \le s_0$ while $s^*_{\pi_b} = 1$ (censored).
+\end{proposition}
+
+\begin{proposition}[AUROC Portability Across Regime Mixes]
+\label{prop:mixture}
+Let an evaluation distribution consist of a mixture of a plateau regime (fraction $1-q$, failure rate $f_p$) and a cliff regime (fraction $q$, failure rate $f_c$). If a score achieves within-regime failure AUROC $a$ on the cliff and $a_p$ on the plateau, the global empirical AUROC is given by:
 \begin{equation}
-    d_\mathrm{rep}(\mathcal{D}_{\mathrm{clean}}, \mathcal{D}_{\mathrm{pert}}) = \mathbb{E}_{(x, x') \sim (\mathcal{D}_{\mathrm{clean}}, \mathcal{D}_{\mathrm{pert}})} \left[ \|\phi(x) - \phi(x')\|_2 \right].
+    \mathrm{AUROC}(q) = \frac{q(1-q)\left[a f_c (1-f_p) + (1-a) f_p (1-f_c)\right] + q^2 f_c (1-f_c) a + (1-q)^2 f_p (1-f_p) a_p}{\left[q f_c + (1-q) f_p\right] \left[q (1-f_c) + (1-q) (1-f_p)\right]}.
 \end{equation}
-For paired trajectories collected along identical action or target traces, $d_\mathrm{rep}$ measures the temporal mean distance between clean and perturbed frame embeddings: $\frac{1}{T} \sum_{t=1}^T \|\phi(x_t^{\mathrm{clean}}) - \phi(x_t^{\mathrm{pert}})\|_2$.
+\end{proposition}
 
-\subsection{Semantic Distance Weighting \texorpdfstring{$\tilde{d}_\mathrm{rep}$}{d-tilde\_rep}}
-\label{sec:method:semantic}
+\subsection{Test-Time Adaptation Diagnostic Protocol}
+\label{sec:method:tta}
 
-A key vulnerability of classical $d_\mathrm{rep}$ is that background distractors (e.g., changes in sky or wall color) create substantial Euclidean feature shifts despite having zero impact on optimal policy execution.
-To decouple task-relevant feature changes from task-irrelevant appearance changes, we introduce spatial semantic weighting.
-
-Let $\phi_{\mathrm{spatial}}(x) \in \mathbb{R}^{C \times H' \times W'}$ denote unpooled spatial feature maps before final pooling. 
-A semantic weighter backend generates a normalized spatial weight matrix $W_s \in [0, 1]^{H' \times W'}$ where pixels deemed critical for decision-making receive weights close to $1.0$, while task-irrelevant background regions receive a floor weight $\beta \in [0, 1]$ (set to $\beta = 0.1$ in our implementation).
-The semantically-weighted representation distance is computed as:
+To evaluate whether test-time self-supervision can reverse performance collapse, we implement an online test-time adaptation module (\texttt{ttss/adapter.py}).
+During deployment, the agent maintains an observation window $X_{\mathrm{win}}$ of length $W = 8$.
+Candidate encoder parameters $\phi'$ are generated via SGD updates on a self-supervised moment-matching objective:
 \begin{equation}
-    \tilde{d}_\mathrm{rep}(x, x', W_s) = \frac{\sum_{h=1}^{H'} \sum_{w=1}^{W'} W_{s, h, w} \, \|\phi_{\mathrm{spatial}}(x)_{:, h, w} - \phi_{\mathrm{spatial}}(x')_{:, h, w}\|_2}{\sum_{h=1}^{H'} \sum_{w=1}^{W'} W_{s, h, w}}.
+    \mathcal{L}_\mathrm{TTSS}(\phi; X_{\mathrm{win}}) = \|\mu_{\mathrm{test}} - \mu_{\mathrm{off}}\|_2^2 + \|\sigma^2_{\mathrm{test}} - \sigma^2_{\mathrm{off}}\|_2^2.
 \end{equation}
-We evaluate three weighter formulations:
-\begin{itemize}
-    \item \textbf{SegmentationWeighter (GT Mask):} Utilizes ground-truth entity segmentation masks from the simulator. Regions containing active targets or hazards are assigned weight $1.0$, and non-entity pixels are assigned baseline floor weight $\beta$.
-    \item \textbf{TLDAWeighter (Lipschitz Policy):} Estimates the local Lipschitz sensitivity of policy actions with respect to spatial image locations via target-layer discriminant analysis~\citep{yuan2022tlda}.
-    \item \textbf{SaliencyWeighter (Critic Gradient):} Computes gradient saliency of the state-action value critic $Q_\theta(s, a)$ with respect to spatial feature activations: $W_s \propto \|\nabla_{\phi_{\mathrm{spatial}}} Q_\theta(s, a)\|_1$.
-\end{itemize}
-
-\subsection{Grassmann Subspace Manifold Analysis}
-\label{sec:method:grassmann}
-
-Rather than tracking single-frame point embeddings, we analyze the geometric geometry of entire trajectory subspaces on the Grassmann manifold $\mathrm{Gr}(k, D)$, the set of all $k$-dimensional linear subspaces of $\mathbb{R}^D$~\citep{bendokat2020grassmann,huang2016riemannian}.
-
-Given a trajectory activation matrix $A \in \mathbb{R}^{T \times D}$ of $T$ time steps, we center the features and compute the truncated Singular Value Decomposition (SVD):
-\begin{equation}
-    A - \bar{A} = U \Sigma V^\top.
-\end{equation}
-The first $k$ columns of $V$ (or left singular vectors of covariance) form an orthonormal basis $U_k \in \mathbb{R}^{D \times k}$ representing a point $[U_k] \in \mathrm{Gr}(k, D)$ satisfying $U_k^\top U_k = I_k$.
-
-Given two subspaces $U_1, U_2 \in \mathrm{Gr}(k, D)$ representing clean and perturbed trajectories, we compute the singular values of their mutual projection:
-\begin{equation}
-    U_1^\top U_2 = Y \operatorname{diag}(\sigma_1, \ldots, \sigma_k) Z^\top,
-\end{equation}
-where $\sigma_i = \cos(\theta_i)$ and $\theta_1 \le \theta_2 \le \cdots \le \theta_k \in [0, \pi/2]$ are the canonical \emph{principal angles} between the two subspaces.
-The Riemannian geodesic distance along the manifold is:
-\begin{equation}
-    d_\mathrm{geo}(U_1, U_2) = \|\Theta\|_2 = \sqrt{\sum_{i=1}^k \theta_i^2}.
-\end{equation}
-Complementarily, the projection distance is defined as:
-\begin{equation}
-    d_\mathrm{proj}(U_1, U_2) = \frac{1}{\sqrt{2}} \|U_1 U_1^\top - U_2 U_2^\top\|_F = \sqrt{\sum_{i=1}^k \sin^2(\theta_i)}.
-\end{equation}
-
-\subsection{Test-Time Self-Supervised Adaptation (TTSS)}
-\label{sec:method:ttss}
-
-To mitigate performance degradation online without true reward signals, we implement a Test-Time Self-Supervised Adaptation module (\texttt{ttss/adapter.py}).
-During policy deployment, an observation buffer maintains a rolling window of recent test observations $X_{\mathrm{win}} = (x_{t-W+1}, \ldots, x_t)$ of size $W = 16$.
-
-\paragraph{Self-Supervised Adaptation Objective.}
-At each control step, candidate encoder parameters $\phi'$ are obtained by performing gradient steps on a combined self-supervised objective:
-\begin{equation}
-    \mathcal{L}_\mathrm{TTSS}(\phi; X_{\mathrm{win}}) = \mathcal{L}_\mathrm{smooth}(\phi; X_{\mathrm{win}}) + \lambda_{\mathrm{mom}} \mathcal{L}_\mathrm{moment}(\phi; X_{\mathrm{win}}),
-\end{equation}
-where $\lambda_{\mathrm{mom}} = 1.0$. The temporal consistency loss $\mathcal{L}_\mathrm{smooth}$ penalizes erratic jumps between consecutive representations:
-\begin{equation}
-    \mathcal{L}_\mathrm{smooth} = \frac{1}{W-1} \sum_{i=1}^{W-1} \|\phi(x_{i+1}) - \phi(x_i)\|_2^2.
-\end{equation}
-The moment-matching loss $\mathcal{L}_\mathrm{moment}$ aligns the test distribution's batch statistics with stored offline training statistics $(\mu_{\mathrm{off}}, \sigma^2_{\mathrm{off}})$~\citep{liu2021tttplusplus}:
-\begin{equation}
-    \mathcal{L}_\mathrm{moment} = \|\mu_{\mathrm{test}} - \mu_{\mathrm{off}}\|_2^2 + \|\sigma^2_{\mathrm{test}} - \sigma^2_{\mathrm{off}}\|_2^2.
-\end{equation}
-
-\paragraph{Trust-Region Safeguard.}
-To prevent gradient updates from corrupting well-functioning representations, candidate encoder weights $\phi'$ are evaluated before commit.
-The candidate update is accepted if and only if:
-\begin{equation}
-    \mathcal{L}_\mathrm{TTSS}(\phi'; X_{\mathrm{win}}) < \mathcal{L}_\mathrm{TTSS}(\phi; X_{\mathrm{win}}).
-\end{equation}
-If the candidate loss fails to strictly decrease, the update is rejected and the encoder state is restored to $\phi$.
-In our implementation, candidate updates are generated via two iterations of Stochastic Gradient Descent (SGD) with learning rate $\eta = 10^{-4}$ and momentum $0.5$.
+A trust-region safeguard evaluates candidate weights $\phi'$: the update is committed if and only if $\mathcal{L}_\mathrm{TTSS}(\phi'; X_{\mathrm{win}}) < \mathcal{L}_\mathrm{TTSS}(\phi; X_{\mathrm{win}}) - \delta$. Otherwise, the update is rejected and encoder parameters revert to $\phi$.
+All arms (\texttt{none}, \texttt{ttt}, \texttt{ttss}) share identical base learning rates ($\eta = 0.001$), buffer sizes ($8$), and moment weights ($1.0$), isolating the single factor of safeguard update rejection.
