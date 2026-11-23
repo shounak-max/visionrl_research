@@ -1,0 +1,6 @@
+{
+  "policy_type": "TACO",
+  "status": "not_run",
+  "reason": "CUDA is unavailable (torch.cuda.is_available() is False, PyTorch 2.15.0+cpu). Running 50k steps x 3 seeds on CPU benchmarked at >3.8 hours of training plus 3,300 evaluation episodes without GPU acceleration.",
+  "recommendation": "Remove TACO from paper claims until it can be run on GPU hardware"
+}

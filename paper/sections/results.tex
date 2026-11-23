@@ -1,135 +1,102 @@
-%% ============================================================
-%%  Section: Results
-%%  Skeleton — \placeholder{} marks every number.
-%%  Source of truth: paper_artifacts/paper_headline_results_combined.json
-%%  and paper_artifacts/phase0_sanity_check_results.json
-%%  DO NOT use CONTEXT.md values without cross-checking JSON.
-%% ============================================================
-
-\section{Results}
+\section{Experimental Results}
 \label{sec:results}
 
-\subsection{Phase 0 \& 1: Predictive Validity of Representation Distance}
-\label{sec:results:phase01}
+In this section, we present empirical evaluations addressing our core research questions:
+(i) Does classical representation distance reliably forecast competence breakdown?
+(ii) Can semantic spatial weighting restore correlation under complex combinatorial shifts?
+(iii) How does representation geometry on the Grassmann manifold reflect policy robustness?
+(iv) Can test-time self-supervised adaptation safeguard policies against catastrophic failure?
 
-\paragraph{Visual Pursuit (Smooth Continuous Control).}
-On the Visual Pursuit benchmark, classical $d_\mathrm{rep}$ exhibits
-strong negative correlation with policy return
-(Pearson $r = \placeholder{visual\_pursuit\_pearson\_r}$,
- $p \approx 0$, $N = \placeholder{visual\_pursuit\_N}$;
- Spearman $\rho = \placeholder{visual\_pursuit\_spearman\_rho}$),
-confirming that feature drift reliably forecasts tracking degradation on
-smooth dynamics.
+\subsection{Phase 0: Baseline Drift and Domain Sensitivity}
+\label{sec:results:phase0}
 
-\paragraph{Procgen CoinRun (Discrete Combinatorial).}
-On CoinRun the classical metric collapses:
-Spearman $\rho = \placeholder{procgen\_spearman\_rho}$
-($p = \placeholder{procgen\_p}$, $N = \placeholder{procgen\_N}$).
-The \textit{background} perturbation axis yields $\rho = 0.0$ due to
-policy invariance to pure background changes.
+We first evaluate classical representation drift $d_\mathrm{rep}$ across clean and perturbed visual distributions without test-time rollouts.
+In the smooth continuous-control \textbf{Visual Pursuit} domain, $d_\mathrm{rep}$ exhibits a strong, statistically significant negative correlation with policy return:
+\begin{equation*}
+    r = -0.8853 \quad (p < 10^{-200}, N = 2500), \quad \rho = -0.6592.
+\end{equation*}
+This confirms that in smooth visual manifolds where control degrades continuously with perceptual noise, feature drift directly indicates policy degradation.
 
-\paragraph{Table 1: Semantic Weighting.}
-\Cref{tab:semantic} reports overall Spearman correlations for all four
-weighter backends on Procgen CoinRun.
+However, when evaluating the same metric on the combinatorial game environment \textbf{Procgen CoinRun}, classical $d_\mathrm{rep}$ completely collapses:
+\begin{equation*}
+    \rho = -0.1143 \quad (p = 0.4545, N = 45), \quad r = -0.1999.
+\end{equation*}
+A per-axis breakdown on CoinRun reveals marked divergence across shift modalities:
+\begin{itemize}
+    \item \textbf{Background shift:} $\rho = 0.0000$ ($p = 1.0, N = 15$). The policy is invariant to background shifts, yet $d_\mathrm{rep}$ registers large Euclidean shifts, destroying predictive alignment.
+    \item \textbf{Sprite shift:} $\rho = +0.2724$ ($p = 0.3261, N = 15$).
+    \item \textbf{Wall texture shift:} $\rho = +0.0772$ ($p = 0.7846, N = 15$).
+\end{itemize}
 
-\begin{table}[h]
-  \centering
-  \caption{Semantic Distance Weighting ($\tilde{d}_\mathrm{rep}$) vs.\
-           Classical $d_\mathrm{rep}$ on Procgen CoinRun.
-           $\dagger$ denotes $p < 0.05$.}
-  \label{tab:semantic}
-  \begin{tabular}{lrr}
-    \toprule
-    Weighter & Overall $\rho$ & $p$-value \\
-    \midrule
-    Classical $d_\mathrm{rep}$                         & \placeholder{classical\_overall\_rho} & \placeholder{classical\_p} \\
-    SegmentationWeighter (GT Mask)$^\dagger$            & \placeholder{seg\_overall\_rho}       & \placeholder{seg\_p} \\
-    TLDAWeighter (Lipschitz)                            & \placeholder{tlda\_overall\_rho}      & \placeholder{tlda\_p} \\
-    SaliencyWeighter (Critic Gradient)                  & \placeholder{saliency\_overall\_rho}  & \placeholder{saliency\_p} \\
-    \bottomrule
-  \end{tabular}
-\end{table}
+\subsection{Phase 1: Semantic Distance Weighting Evaluation}
+\label{sec:results:phase1}
 
-The SegmentationWeighter achieves the highest overall $\rho$
-($= \placeholder{seg\_overall\_rho}$, $p = \placeholder{seg\_p}$),
-the only weighter to reach statistical significance.
-The SaliencyWeighter isolates decision-critical hazard signals on the
-\textit{difficulty} axis ($\rho = \placeholder{saliency\_difficulty\_rho}$,
-$p = \placeholder{saliency\_difficulty\_p}$), suggesting critic saliency
-captures task-relevant perturbations even when overall correlation is weak.
+To test whether spatial masking can decouple benign background shifts from critical entity shifts, we evaluate the three semantic weighter backends introduced in Section~\ref{sec:method:semantic} across 400 test episodes spanning four holdout axes.
+The full correlation grid is reported in Table~\ref{tab:phase1_semantic}.
 
-\subsection{Phase 2: Riemannian Geometry of Representation Subspaces}
+\input{tables/table1_semantic}
+
+The results show that spatial semantic weighting yields only modest recovery:
+\begin{itemize}
+    \item \textbf{Ground-Truth Masking:} \texttt{SegmentationWeighter} achieves the highest overall rank correlation ($\rho = 0.1075$, $p = 0.0315$), achieving marginal statistical significance at the $\alpha = 0.05$ level. However, the improvement over unweighted $d_\mathrm{rep}$ ($\rho = 0.0926$, $p = 0.0643$) is small ($\Delta \rho = +0.0149$).
+    \item \textbf{Model-Based Saliency:} \texttt{TLDAWeighter} (Lipschitz policy gradients) achieves $\rho = 0.0205$ ($p = 0.6825$), while \texttt{SaliencyWeighter} (critic gradients) achieves $\rho = 0.0272$ ($p = 0.5877$). Neither model-based weighter achieves statistical significance overall.
+    \item \textbf{Axis-Specific Trends:} On the difficulty (hazard geometry) axis, \texttt{SaliencyWeighter} achieves $\rho = 0.1882$ ($p = 0.0608$), showing marginal sensitivity to obstacle layout changes. On the background shift axis, all models exhibit $\rho = 0.0000$ because policy returns remain constant across background variations.
+\end{itemize}
+These empirical results demonstrate that while ground-truth semantic masks provide a slight edge, spatial weighting alone does not reliably solve competence boundary forecasting in discrete, non-smooth visual RL tasks.
+
+\subsection{Phase 2: Grassmann Manifold Subspace Analysis}
 \label{sec:results:phase2}
 
-\paragraph{Table 2: Grassmann Geodesic Distances.}
-\Cref{tab:geometry} shows geodesic distances $d_\mathrm{geo}$ on
-$\mathrm{Gr}(k, 512)$ across three encoder regimes and three subspace
-dimensions.
+We next evaluate representation geometry across trajectory manifolds on $\mathrm{Gr}(k, 512)$ across three encoder fine-tuning regimes: (1) Frozen ResNet-18, (2) Partial Fine-Tuning of ResNet-18, and (3) End-to-End trained CNN (DrQ-v2 / SVEA).
+Table~\ref{tab:phase2_geometry} presents the geodesic distances $d_\mathrm{geo}$ across subspace dimensions $k \in \{5, 10, 20\}$.
 
-\begin{table}[h]
-  \centering
-  \caption{Grassmann geodesic distances (radians) across encoder regimes.
-           Lower $d_\mathrm{geo}$ indicates less subspace drift.}
-  \label{tab:geometry}
-  \begin{tabular}{lrrr}
-    \toprule
-    Encoder Regime & $k=5$ & $k=10$ & $k=20$ \\
-    \midrule
-    Frozen ResNet-18         & \placeholder{frozen\_geo\_k5} & \placeholder{frozen\_geo\_k10} & \placeholder{frozen\_geo\_k20} \\
-    Partial Fine-Tune ResNet-18 & \placeholder{partial\_geo\_k5} & \placeholder{partial\_geo\_k10} & \placeholder{partial\_geo\_k20} \\
-    End-to-End CNN (DrQ-v2)  & \placeholder{e2e\_geo\_k5}    & \placeholder{e2e\_geo\_k10}    & \placeholder{e2e\_geo\_k20} \\
-    \bottomrule
-  \end{tabular}
-\end{table}
+\input{tables/table2_geometry}
 
-%% AUDIT NOTE: JSON authoritative values —
-%%   End-to-End CNN k=10: 2.2297 rad (NOT 2.4133 as in CONTEXT.md)
-%%   Frozen ResNet-18 k=10: 4.2021 rad (confirmed)
+Across all evaluated subspace dimensions, the End-to-End trained CNN displays substantially lower geodesic drift under visual perturbation:
+\begin{itemize}
+    \item At $k = 5$, End-to-End CNN achieves $d_\mathrm{geo} = 1.9255$\,rad, compared to $2.8370$\,rad for partially fine-tuned and $2.9735$\,rad for frozen ResNet-18.
+    \item At $k = 10$, End-to-End CNN achieves $d_\mathrm{geo} = 2.2297$\,rad, compared to $4.0721$\,rad and $4.2021$\,rad for partially fine-tuned and frozen backbones.
+    \item At $k = 20$, End-to-End CNN maintains $d_\mathrm{geo} = 1.5402$\,rad, whereas the frozen backbone drifts to $5.7208$\,rad.
+\end{itemize}
+This provides strong geometric evidence: policies trained end-to-end with visual data augmentations structure their latent representation manifold such that perceptual shifts lie close to the clean trajectory subspace, whereas generic pretrained features disperse widely along orthogonal directions (max principal angle reaches $89.8^\circ$).
 
-End-to-end trained encoders exhibit substantially lower geodesic distance
-at $k = 10$ ($d_\mathrm{geo} = \placeholder{e2e\_geo\_k10}$ rad) compared to
-frozen ResNet-18 ($\placeholder{frozen\_geo\_k10}$ rad), indicating that
-task-specific fine-tuning constrains feature subspace drift under distribution
-shift.
-
-\subsection{Phase 3: Test-Time Self-Supervised Adaptation (TTSS)}
+\subsection{Phase 3: Test-Time Adaptation and Floor Collapse Prevention}
 \label{sec:results:phase3}
 
-\paragraph{Table 3: Adaptation Under Severe Shift.}
-\Cref{tab:ttss} reports policy performance under severe distribution shift
-(color inversion + contrast reduction + camera noise).
+Under severe visual shift (concurrent contrast reduction, color inversion, and camera noise), unadapted visual tracking policies frequently lose lock on the target completely.
+We define a \emph{catastrophic floor collapse} as an episode with mean tracking error $\ge 15.0$\,px (close to the unguided random policy baseline of $\approx 22$\,px).
 
-\begin{table}[h]
-  \centering
-  \caption{TTSS adaptation results under severe shift.
-           Floor-collapse: fraction of episodes with
-           tracking error $\geq 15$ px.}
-  \label{tab:ttss}
-  \begin{tabular}{lrr}
-    \toprule
-    Method & Mean Error (px) & Floor-Collapse (\%) \\
-    \midrule
-    Unadapted Baseline     & \placeholder{unadapted\_error\_px}    & \placeholder{unadapted\_collapse\_pct} \\
-    Naive TTT (No Safeguard) & \placeholder{naive\_error\_px}      & \placeholder{naive\_collapse\_pct} \\
-    Safeguarded TTSS (Ours) & \placeholder{safeguarded\_error\_px} & \placeholder{safeguarded\_collapse\_pct} \\
-    \bottomrule
-  \end{tabular}
-\end{table}
+Table~\ref{tab:phase3_ttss} reports tracking performance and floor collapse rates across 30 evaluation episodes per condition.
 
-%% AUDIT NOTE (CRITICAL — DO NOT PAPER OVER):
-%% trust_region_acceptance_rate = 1.0 for BOTH naive_ttt AND safeguarded_ttss
-%% in the Phase 3 evaluation run. The safeguard never rejected any update.
-%% The floor-collapse reduction (from \placeholder{unadapted\_collapse\_pct}\%
-%% to \placeholder{safeguarded\_collapse\_pct}\%) is a real measured result,
-%% but it cannot be attributed to trust-region rejection since acceptance_rate = 1.0.
-%% Improvement is likely from moment-matching regularization alone.
-%% Reframe or re-run before claiming trust-region specifically helps.
+\input{tables/table3_ttss}
 
-Safeguarded TTSS reduces mean tracking error from
-$\placeholder{unadapted\_error\_px}$~px to
-$\placeholder{safeguarded\_error\_px}$~px and catastrophic floor-collapse
-from $\placeholder{unadapted\_collapse\_pct}\%$ to
-$\placeholder{safeguarded\_collapse\_pct}\%$
-($\placeholder{relative\_collapse\_reduction\_pct}\%$ relative reduction).
-Average adaptation latency is $\placeholder{safeguarded\_latency\_ms}$~ms/step,
-confirming real-time applicability.
+The unadapted baseline policy suffers a $40.0\%$ floor collapse rate with a mean CLE of $14.49$\,px. 
+Deploying Safeguarded TTSS reduces the catastrophic floor collapse rate to $20.0\%$ (a $50\%$ relative reduction) and improves the mean tracking error to $13.12$\,px, while introducing a minimal latency overhead of $46.43$\,ms per step.
+
+\paragraph{Critical Analysis of Trust-Region Safeguard.}
+Crucially, our logging reveals that the trust-region safeguard achieved an acceptance rate of $100.0\%$ ($30/30$ episodes, all adaptation steps accepted) in both the naive TTT and safeguarded TTSS conditions. 
+\emph{The trust-region safeguard accepted 100\% of proposed updates in our experiments, suggesting either the moment-matching loss is well-behaved or the safeguard threshold needs calibration.}
+Specifically, because the candidate SGD updates consistently decreased the combined self-supervised objective $\mathcal{L}_\mathrm{TTSS}$ on the local observation window, the safeguard condition $\mathcal{L}_\mathrm{after} < \mathcal{L}_\mathrm{before}$ was satisfied on every step. 
+Thus, the reduction in floor collapse rate is attributable to the regularizing effect of the TTT++ moment-matching and temporal consistency objectives, rather than dynamic update rejection.
+
+\subsection{Analysis of Censored Severities}
+\label{sec:results:censoring}
+
+In visual control benchmarks, competence degradation exhibits pronounced non-linearities across shift severity $\alpha \in [0.0, 1.0]$:
+\begin{itemize}
+    \item \textbf{Clean Deployment ($\alpha = 0.0$):} All evaluated policies succeed reliably, achieving mean CLE $< 3.5$\,px (well below the $5.0$\,px threshold) with $0.0\%$ episode censoring.
+    \item \textbf{Moderate Severity ($\alpha \in [0.2, 0.6]$):} Tracking error increases gracefully; the reticle periodically lags behind the target during sharp velocity reversals, but recovers.
+    \item \textbf{Extreme Severity ($\alpha \to 1.0$):} Under maximal perturbation intensity, episodes exhibit censoring effects where the reticle drifts entirely out of frame or reaches the boundary walls, capping localization errors at domain limits. Separating censored from uncensored regimes is therefore essential when calculating rank correlations, as saturation at extreme severity compresses metric variance.
+\end{itemize}
+
+\subsection{Summary of Hypotheses Testing}
+\label{sec:results:hypotheses}
+
+We conclude our results by summarizing the empirical status of our pre-specified hypotheses:
+\begin{enumerate}
+    \item \textbf{H1 (Linear Representation Drift Predictor): PARTIALLY SUPPORTED.} Classical $d_\mathrm{rep}$ strongly correlates with return degradation in smooth visual control ($r = -0.8853$), but fails completely on combinatorial game transitions ($\rho = -0.1143$).
+    \item \textbf{H2 (Semantic Weighting Restores Correlation): NOT SUPPORTED / MARGINAL.} Ground-truth semantic weighting provides only a marginal improvement ($\rho = 0.1075$ vs.\ $0.0926$), and model-based weighters fail to achieve statistical significance.
+    \item \textbf{H3 (Subspace Compactness Under End-to-End RL): SUPPORTED.} End-to-end trained CNN encoders produce substantially lower Grassmann geodesic drift than frozen ResNet-18 backbones ($1.5402$--$2.2297$\,rad vs.\ $2.9735$--$5.7208$\,rad).
+    \item \textbf{H4 (Test-Time Adaptation Mitigates Floor Collapse): SUPPORTED.} TTSS reduces floor collapse by $50\%$ relative ($40.0\%$ to $20.0\%$).
+    \item \textbf{H5 (Trust-Region Safeguard Selectivity): NOT SUPPORTED.} The trust-region safeguard accepted $100.0\%$ of proposed updates, failing to trigger active rejection under the evaluated shift conditions.
+\end{enumerate}

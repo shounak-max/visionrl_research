@@ -1,0 +1,13 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.2.0, pluggy-1.7.0 -- C:\Users\shoun\AppData\Local\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\shoun\.gemini\antigravity\worktrees\a55ae30c-7ddb-4c03-adca-eab238207305\swarm-consistency-188d8701
+collecting ... collected 5 items
+
+tests/test_audit_assertions.py::test_success_threshold_defined PASSED    [ 20%]
+tests/test_audit_assertions.py::test_ttss_adapter_rollback PASSED        [ 40%]
+tests/test_audit_assertions.py::test_ttss_trust_region_rejects_bad_update PASSED [ 60%]
+tests/test_audit_assertions.py::test_seed_disjointness PASSED            [ 80%]
+tests/test_audit_assertions.py::test_phase3_acceptance_rate_suspicious XFAIL [100%]
+
+======================== 4 passed, 1 xfailed in 3.61s =========================

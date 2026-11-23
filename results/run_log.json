@@ -1,0 +1,51 @@
+{
+  "commit_hash": "8e34eee0e247c7378fa0877018df180cd640ea68",
+  "timestamp": "2026-11-23T14:06:00+05:30",
+  "hardware": {
+    "device": "cpu",
+    "torch_version": "2.15.0+cpu",
+    "cuda_available": false
+  },
+  "seeds": {
+    "training_seeds": [42, 43, 44],
+    "taco_planned_seeds": [100, 200, 300],
+    "learning_curve_seeds": [42, 43],
+    "evaluation_seeds": [42, 43, 44],
+    "seed_disjointness_verified": true
+  },
+  "environments": {
+    "visual_pursuit": {
+      "obs_shape": [64, 64, 3],
+      "action_dim": 2,
+      "success_threshold_cle_px": 5.0,
+      "floor_collapse_threshold_cle_px": 15.0,
+      "random_policy_floor_cle_px": 22.05,
+      "shift_axes": ["photometric", "camera_noise", "severe_shift"],
+      "status": "fully_evaluated"
+    },
+    "procgen_coinrun": {
+      "obs_shape": [64, 64, 3],
+      "action_dim": 15,
+      "shift_axes": ["background", "difficulty", "sprite", "wall_texture"],
+      "status": "evaluated_offline_transitions"
+    },
+    "reacher": {
+      "status": "not_run_and_removed_from_paper"
+    }
+  },
+  "policies": {
+    "drq_v2": "evaluated",
+    "svea": "evaluated",
+    "taco": "implemented_policies_taco_py_deferred_gpu",
+    "d_va": "excluded_non_differentiable_simulator"
+  },
+  "scores": {
+    "classical_d_rep": "evaluated",
+    "segmentation_gt_mask": "evaluated",
+    "tlda_lipschitz": "evaluated",
+    "saliency_critic": "evaluated",
+    "grassmann_geodesic": "evaluated",
+    "score_10_pac_drift": "implemented_and_tested",
+    "score_11_gcm_drift": "implemented_and_tested"
+  }
+}

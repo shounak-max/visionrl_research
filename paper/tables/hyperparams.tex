@@ -1,0 +1,25 @@
+\begin{table}[h]
+\centering
+\caption{Hyperparameters used in all experiments.}
+\begin{tabular}{lll}
+\hline
+Hyperparameter & Value & Source \\
+\hline
+Learning rate & 1e-04 & drq\_v2.py:lr \\
+Discount gamma & 0.99 & drq\_v2.py:gamma \\
+Replay capacity & 10000 & drq\_v2.py:ReplayBuffer \\
+Batch size & 64 & drq\_v2.py:ReplayBuffer.sample \\
+Encoder embedding dim & 512 & drq\_v2.py:embedding_dim \\
+Random shift pad & 4 & drq\_v2.py:RandomShiftsAug \\
+Polyak tau & 0.02 & drq\_v2.py:tau \\
+Training steps & 50000 & (from experiment design) \\
+Env obs size & 64x64x3 & visual\_pursuit.py \\
+Success threshold & mean CLE < 5px & (from CONTEXT.md) \\
+kNN k & not found in config - check code &  \\
+TTSS window size & 16 & ttss/adapter.py \\
+TTSS lr & 1e-04 & ttss/adapter.py \\
+Conformal calibration level & not found in config - check code &  \\
+\hline
+\end{tabular}
+\label{tab:hyperparams}
+\end{table}

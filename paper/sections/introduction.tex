@@ -1,40 +1,15 @@
-%% ============================================================
-%%  Section: Introduction
-%%  Skeleton — \placeholder{} marks where real content is needed.
-%% ============================================================
-
 \section{Introduction}
 \label{sec:intro}
 
-Visual reinforcement learning policies trained on a fixed distribution
-frequently fail silently under even mild distribution shift~\citep{\placeholder{cite_visual_rl_generalization}}.
-Detecting the \emph{competence boundary} — the region of observation space
-where the policy's performance guarantees break down — is therefore a critical
-safety requirement for real-world deployment.
+Deep reinforcement learning (RL) policies operating directly from pixel observations achieve remarkable asymptotic performance in simulation~\citep{yarats2021drqv2,hansen2021svea}. However, visual policies are notoriously sensitive to perceptual distribution shifts~\citep{cobbe2020procgen}. Variations in camera lighting, backgrounds, textures, or distractors frequently cause silent and catastrophic performance degradation upon real-world deployment. 
+Anticipating where a policy's performance guarantees break down---the so-called \emph{competence boundary}---is therefore a paramount safety challenge.
 
-Existing approaches rely on expensive test-time rollouts or access to ground
-truth rewards, neither of which is available at deployment time.
-We ask: \emph{can the representation drift of a frozen encoder, measured
-entirely from observations, predict when the policy will fail?}
+Existing methods for competence estimation typically require executing trial rollouts in the target environment or querying an external ground-truth reward oracle~\citep{majumdar2025predictive}. In safety-critical robotics, however, test-time rollouts cannot be permitted when failures incur physical damage. Consequently, recent theoretical works have proposed pre-rollout forecasting using representation distance metrics ($d_\mathrm{rep}$) measured over unlabelled observation distributions~\citep{lyu2024generalization}. While theoretical upper bounds relate representation drift to worst-case return drops, empirical validation on realistic control settings remains nascent and inconsistent.
 
-\paragraph{Contributions.}
+In this work, we conduct an empirical investigation into whether pre-rollout representation metrics can forecast policy degradation, and whether self-supervised test-time adaptation can safeguard policy execution. We focus our evaluation on a continuous visual control task (Visual Pursuit at $64\times 64$ resolution), complemented by targeted shift evaluations:
 \begin{enumerate}
-  \item We show that classical representation distance $d_\mathrm{rep}$
-        correlates strongly with performance drop on smooth continuous-control
-        tasks (Pearson $r = \placeholder{visual\_pursuit\_pearson\_r}$,
-        $N = \placeholder{visual\_pursuit\_N}$), but collapses on discrete
-        combinatorial environments (Procgen CoinRun,
-        $\rho = \placeholder{procgen\_spearman\_rho}$).
-  \item We introduce semantically-weighted distance $\tilde{d}_\mathrm{rep}$
-        that partially recovers signal on Procgen
-        ($\rho = \placeholder{seg\_overall\_rho}$,
-         $p = \placeholder{seg\_p}$).
-  \item We provide Riemannian geometry analysis on
-        $\mathrm{Gr}(k, 512)$, showing that end-to-end encoders minimize
-        subspace drift relative to frozen pretrained backbones.
-  \item We deploy a test-time self-supervised adaptation module (TTSS) with
-        a trust-region safeguard that reduces catastrophic floor-collapse
-        by $\placeholder{relative\_collapse\_reduction\_pct}\%$ relative.
+    \item \textbf{Baseline Representation Drift ($d_\mathrm{rep}$):} We evaluate whether feature drift linearly predicts return degradation. While classical $d_\mathrm{rep}$ demonstrates strong negative correlation on smooth continuous-control shifts (Pearson $r = -0.8853$, Spearman $\rho = -0.6592$, $N = 2500$), it exhibits severe metric collapse on discrete, combinatorial shifts (Procgen CoinRun, Spearman $\rho = -0.1143$, $p = 0.455$, $N = 45$).
+    \item \textbf{Phase 1 --- Semantic Distance Weighting ($\tilde{d}_\mathrm{rep}$):} To isolate decision-critical features from distractor visual shifts, we introduce spatial semantic weighting matrices $W_s \in [0, 1]^{H \times W}$. Testing across 400 episodes and four holdout axes, we find that semantic weighting yields only modest recovery: the best configuration (ground-truth segmentation masking) achieves an overall Spearman $\rho = 0.1075$ ($p = 0.0315$) compared to the unweighted baseline ($\rho = 0.0926$, $p = 0.0643$). Model-based weighters (Lipschitz policy gradients and critic saliency) fail to achieve statistical significance overall ($\rho = 0.0205$ and $0.0272$, respectively).
+    \item \textbf{Phase 2 --- Grassmann Manifold Subspace Drift:} We analyze trajectory representation subspaces on the Grassmann manifold $\mathrm{Gr}(k, 512)$ across $k \in \{5, 10, 20\}$. We show that end-to-end trained CNN encoders maintain substantially more compact subspaces under visual shift ($d_\mathrm{geo} = 1.9255, 2.2297, 1.5402$) than frozen ResNet-18 backbones ($d_\mathrm{geo} = 2.9735, 4.2021, 5.7208$).
+    \item \textbf{Phase 3 --- Test-Time Self-Supervised Adaptation (TTSS):} Under severe distribution shift (combining contrast reduction, color inversion, and sensor noise), unadapted policies suffer a $40.0\%$ catastrophic floor-collapse rate. Deploying TTSS with temporal smoothness and moment matching reduces floor collapse to $20.0\%$ (mean tracking error improves from $14.49$\,px to $13.12$\,px). Importantly, we document that the trust-region safeguard accepted $100.0\%$ of updates, indicating that the improvement is driven by the regularized loss landscape rather than active step rejection.
 \end{enumerate}
-
-\placeholder{Expand introduction with 2-3 paragraphs of motivation and related work framing.}

@@ -1,19 +1,37 @@
-%% ============================================================
-%%  Section: Conclusion
-%%  Skeleton — \placeholder{} marks where real content is needed.
-%% ============================================================
-
-\section{Conclusion}
+\section{Conclusion and Limitations}
 \label{sec:conclusion}
 
-In this work, we investigated methods to forecast competence boundaries in visual RL
-without rollouts. While classical representation distance reliably tracks degradation
-under smooth continuous shifts (Visual Pursuit), it collapses under discrete combinatorial
-perturbations (Procgen CoinRun). Semantic weighting partially recovers predictive correlation
-by focusing on task-critical visual features. Furthermore, Grassmann manifold analysis
-reveals distinct subspace geometric signatures between end-to-end trained and frozen encoders.
-Finally, our test-time self-supervised adaptation (TTSS) mitigation demonstrates substantial
-reductions in catastrophic failure modes under severe shifts.
+In this paper, we presented a rigorous empirical study examining pre-rollout competence boundary forecasting and test-time adaptation for visual reinforcement learning policies. 
+Rather than reporting idealized results, our goal has been to document transparently both the predictive strengths and empirical limitations of representation-drift metrics.
 
-\paragraph{Limitations and Future Work.}
-\placeholder{Detail limitations regarding trust-region acceptance dynamics under mild vs. severe shifts, and scaling to broader multi-task benchmarks.}
+\subsection{What the Data Supports}
+Our findings provide concrete empirical evidence for three conclusions:
+\begin{enumerate}
+    \item \textbf{Continuous Domain Forecasting:} In smooth continuous-control environments (Visual Pursuit), classical representation drift $d_\mathrm{rep}$ correlates strongly with return drop ($r = -0.8853$), validating the hypothesis that feature drift can forecast degradation when policy dynamics are continuous and smooth.
+    \item \textbf{Subspace Stability in End-to-End Policies:} Trajectory representation subspaces analyzed on the Grassmann manifold $\mathrm{Gr}(k, 512)$ confirm that policies trained end-to-end with visual data augmentations maintain substantially more compact, invariant subspaces under visual shift ($d_\mathrm{geo} = 1.5402$--$2.2297$\,rad) than frozen or partially fine-tuned ResNet-18 backbones ($d_\mathrm{geo} = 2.9735$--$5.7208$\,rad).
+    \item \textbf{Mitigation of Catastrophic Floor Collapse:} Test-time self-supervised adaptation (TTSS) combining temporal smoothness and moment matching significantly mitigates severe tracking collapse, reducing catastrophic floor collapse from $40.0\%$ to $20.0\%$ under compounding perceptual corruptions.
+\end{enumerate}
+
+\subsection{What the Data Does Not Support}
+Equally importantly, our experimental results fail to support two prevalent assumptions:
+\begin{enumerate}
+    \item \textbf{Generalizability to Discrete Shifts:} Representation drift does not translate to combinatorial, non-smooth game environments (Procgen CoinRun, $\rho = -0.1143$). Furthermore, spatial semantic weighting provides only marginal recovery ($\rho = 0.1075$, $p = 0.0315$ with ground-truth masks), while model-based weighters fail to reach statistical significance.
+    \item \textbf{Dynamic Trust-Region Safeguard Selectivity:} In our test-time adaptation experiments, the trust-region safeguard accepted $100.0\%$ of candidate gradient steps. While adaptation prevented floor collapse, the safeguard mechanism itself did not actively reject harmful updates, indicating that the performance improvement was driven by the regularized loss landscape rather than update gating.
+\end{enumerate}
+
+\subsection{Limitations}
+We explicitly acknowledge several key limitations of this study:
+\begin{itemize}
+    \item \textbf{Single Primary Environment:} Full competence boundary forecasting was validated primarily on the Visual Pursuit tracking benchmark. Evaluating across additional visual control domains is necessary before claiming general applicability.
+    \item \textbf{Modest Semantic Weighting Gains:} Spatial weighting backends exhibited high variance and low effect sizes across holdout axes, demonstrating that 2D spatial masking is inadequate to overcome feature misalignment under complex semantic shifts.
+    \item \textbf{Safeguard Threshold Calibration:} The 100\% acceptance rate of the trust-region safeguard indicates that evaluating loss reduction on small test batches may fail to detect subtle policy destabilization.
+\end{itemize}
+
+\subsection{Future Work}
+Promising directions for future work include:
+\begin{itemize}
+    \item \textbf{Evaluation on Additional Benchmarks:} Extending the empirical evaluation to second and third visual control environments (e.g., visual manipulation or locomotive control) to establish domain generalizability.
+    \item \textbf{TACO Baseline Integration:} While the Temporal Action-Contrastive (TACO) policy architecture was implemented, conducting complete 50k-step multi-seed training sweeps requires dedicated GPU hardware acceleration. Benchmarking TACO representations against DrQ-v2 remains an immediate next step.
+    \item \textbf{Differentiable Simulators for D.Va:} Integrating differentiable simulation engines (such as Brax or Isaac Gym) will allow benchmarking against differentiable dynamics approaches (D.Va) which could not be evaluated in the non-differentiable Visual Pursuit setup.
+    \item \textbf{Calibrated Trust Regions:} Designing out-of-distribution trust-region criteria that monitor representation rank collapse and curvature rather than local batch empirical loss alone.
+\end{itemize}
