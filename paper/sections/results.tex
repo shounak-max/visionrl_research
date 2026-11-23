@@ -1,0 +1,135 @@
+%% ============================================================
+%%  Section: Results
+%%  Skeleton — \placeholder{} marks every number.
+%%  Source of truth: paper_artifacts/paper_headline_results_combined.json
+%%  and paper_artifacts/phase0_sanity_check_results.json
+%%  DO NOT use CONTEXT.md values without cross-checking JSON.
+%% ============================================================
+
+\section{Results}
+\label{sec:results}
+
+\subsection{Phase 0 \& 1: Predictive Validity of Representation Distance}
+\label{sec:results:phase01}
+
+\paragraph{Visual Pursuit (Smooth Continuous Control).}
+On the Visual Pursuit benchmark, classical $d_\mathrm{rep}$ exhibits
+strong negative correlation with policy return
+(Pearson $r = \placeholder{visual\_pursuit\_pearson\_r}$,
+ $p \approx 0$, $N = \placeholder{visual\_pursuit\_N}$;
+ Spearman $\rho = \placeholder{visual\_pursuit\_spearman\_rho}$),
+confirming that feature drift reliably forecasts tracking degradation on
+smooth dynamics.
+
+\paragraph{Procgen CoinRun (Discrete Combinatorial).}
+On CoinRun the classical metric collapses:
+Spearman $\rho = \placeholder{procgen\_spearman\_rho}$
+($p = \placeholder{procgen\_p}$, $N = \placeholder{procgen\_N}$).
+The \textit{background} perturbation axis yields $\rho = 0.0$ due to
+policy invariance to pure background changes.
+
+\paragraph{Table 1: Semantic Weighting.}
+\Cref{tab:semantic} reports overall Spearman correlations for all four
+weighter backends on Procgen CoinRun.
+
+\begin{table}[h]
+  \centering
+  \caption{Semantic Distance Weighting ($\tilde{d}_\mathrm{rep}$) vs.\
+           Classical $d_\mathrm{rep}$ on Procgen CoinRun.
+           $\dagger$ denotes $p < 0.05$.}
+  \label{tab:semantic}
+  \begin{tabular}{lrr}
+    \toprule
+    Weighter & Overall $\rho$ & $p$-value \\
+    \midrule
+    Classical $d_\mathrm{rep}$                         & \placeholder{classical\_overall\_rho} & \placeholder{classical\_p} \\
+    SegmentationWeighter (GT Mask)$^\dagger$            & \placeholder{seg\_overall\_rho}       & \placeholder{seg\_p} \\
+    TLDAWeighter (Lipschitz)                            & \placeholder{tlda\_overall\_rho}      & \placeholder{tlda\_p} \\
+    SaliencyWeighter (Critic Gradient)                  & \placeholder{saliency\_overall\_rho}  & \placeholder{saliency\_p} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The SegmentationWeighter achieves the highest overall $\rho$
+($= \placeholder{seg\_overall\_rho}$, $p = \placeholder{seg\_p}$),
+the only weighter to reach statistical significance.
+The SaliencyWeighter isolates decision-critical hazard signals on the
+\textit{difficulty} axis ($\rho = \placeholder{saliency\_difficulty\_rho}$,
+$p = \placeholder{saliency\_difficulty\_p}$), suggesting critic saliency
+captures task-relevant perturbations even when overall correlation is weak.
+
+\subsection{Phase 2: Riemannian Geometry of Representation Subspaces}
+\label{sec:results:phase2}
+
+\paragraph{Table 2: Grassmann Geodesic Distances.}
+\Cref{tab:geometry} shows geodesic distances $d_\mathrm{geo}$ on
+$\mathrm{Gr}(k, 512)$ across three encoder regimes and three subspace
+dimensions.
+
+\begin{table}[h]
+  \centering
+  \caption{Grassmann geodesic distances (radians) across encoder regimes.
+           Lower $d_\mathrm{geo}$ indicates less subspace drift.}
+  \label{tab:geometry}
+  \begin{tabular}{lrrr}
+    \toprule
+    Encoder Regime & $k=5$ & $k=10$ & $k=20$ \\
+    \midrule
+    Frozen ResNet-18         & \placeholder{frozen\_geo\_k5} & \placeholder{frozen\_geo\_k10} & \placeholder{frozen\_geo\_k20} \\
+    Partial Fine-Tune ResNet-18 & \placeholder{partial\_geo\_k5} & \placeholder{partial\_geo\_k10} & \placeholder{partial\_geo\_k20} \\
+    End-to-End CNN (DrQ-v2)  & \placeholder{e2e\_geo\_k5}    & \placeholder{e2e\_geo\_k10}    & \placeholder{e2e\_geo\_k20} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+%% AUDIT NOTE: JSON authoritative values —
+%%   End-to-End CNN k=10: 2.2297 rad (NOT 2.4133 as in CONTEXT.md)
+%%   Frozen ResNet-18 k=10: 4.2021 rad (confirmed)
+
+End-to-end trained encoders exhibit substantially lower geodesic distance
+at $k = 10$ ($d_\mathrm{geo} = \placeholder{e2e\_geo\_k10}$ rad) compared to
+frozen ResNet-18 ($\placeholder{frozen\_geo\_k10}$ rad), indicating that
+task-specific fine-tuning constrains feature subspace drift under distribution
+shift.
+
+\subsection{Phase 3: Test-Time Self-Supervised Adaptation (TTSS)}
+\label{sec:results:phase3}
+
+\paragraph{Table 3: Adaptation Under Severe Shift.}
+\Cref{tab:ttss} reports policy performance under severe distribution shift
+(color inversion + contrast reduction + camera noise).
+
+\begin{table}[h]
+  \centering
+  \caption{TTSS adaptation results under severe shift.
+           Floor-collapse: fraction of episodes with
+           tracking error $\geq 15$ px.}
+  \label{tab:ttss}
+  \begin{tabular}{lrr}
+    \toprule
+    Method & Mean Error (px) & Floor-Collapse (\%) \\
+    \midrule
+    Unadapted Baseline     & \placeholder{unadapted\_error\_px}    & \placeholder{unadapted\_collapse\_pct} \\
+    Naive TTT (No Safeguard) & \placeholder{naive\_error\_px}      & \placeholder{naive\_collapse\_pct} \\
+    Safeguarded TTSS (Ours) & \placeholder{safeguarded\_error\_px} & \placeholder{safeguarded\_collapse\_pct} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+%% AUDIT NOTE (CRITICAL — DO NOT PAPER OVER):
+%% trust_region_acceptance_rate = 1.0 for BOTH naive_ttt AND safeguarded_ttss
+%% in the Phase 3 evaluation run. The safeguard never rejected any update.
+%% The floor-collapse reduction (from \placeholder{unadapted\_collapse\_pct}\%
+%% to \placeholder{safeguarded\_collapse\_pct}\%) is a real measured result,
+%% but it cannot be attributed to trust-region rejection since acceptance_rate = 1.0.
+%% Improvement is likely from moment-matching regularization alone.
+%% Reframe or re-run before claiming trust-region specifically helps.
+
+Safeguarded TTSS reduces mean tracking error from
+$\placeholder{unadapted\_error\_px}$~px to
+$\placeholder{safeguarded\_error\_px}$~px and catastrophic floor-collapse
+from $\placeholder{unadapted\_collapse\_pct}\%$ to
+$\placeholder{safeguarded\_collapse\_pct}\%$
+($\placeholder{relative\_collapse\_reduction\_pct}\%$ relative reduction).
+Average adaptation latency is $\placeholder{safeguarded\_latency\_ms}$~ms/step,
+confirming real-time applicability.

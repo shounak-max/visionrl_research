@@ -1,0 +1,90 @@
+%% ============================================================
+%%  Forecasting Competence Boundaries in Visual RL Without Rollouts
+%%  Paper Scaffold — SKELETON ONLY
+%%  All \placeholder{} commands mark locations where real,
+%%  verified numbers must be inserted from paper_artifacts/.
+%%  DO NOT invent or round numbers manually.
+%% ============================================================
+%%
+%%  AUDIT NOTE (2026-11-23):
+%%  Numbers must be drawn from paper_artifacts/paper_headline_results_combined.json
+%%  and paper_artifacts/phase0_sanity_check_results.json.
+%%  CONTEXT.md contains some stale values — JSON artifacts are authoritative.
+%%  Known discrepancy: End-to-End CNN geodesic k=10 is 2.2297 (JSON),
+%%  NOT 2.4133 as stated in CONTEXT.md.
+%%  Safeguarded TTSS floor-collapse rate is 20.0% (JSON), NOT 26.7% (CONTEXT.md).
+%% ============================================================
+
+\documentclass[10pt,twocolumn]{article}
+
+%% ---- Packages ----
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{natbib}
+
+%% ---- Placeholder command ----
+%% Usage: \placeholder{description_of_needed_value}
+%% Replace with real verified numbers before submission.
+\newcommand{\placeholder}[1]{\textcolor{red}{\textbf{[PLACEHOLDER: #1]}}}
+
+%% ---- Title ----
+\title{%
+  Forecasting Competence Boundaries in Visual RL Without Rollouts%
+}
+
+\author{%
+  \placeholder{Author Names and Affiliations}
+}
+
+\date{\placeholder{Submission Date / Conference}}
+
+\begin{document}
+
+\maketitle
+
+%% ---- Abstract ----
+\begin{abstract}
+  Learned visual policies degrade when deployed under distribution shift, yet
+  detecting \emph{when} a policy will fail before costly rollouts remains
+  unsolved.
+  We propose a family of representation-distance metrics that forecast
+  competence boundaries in visual reinforcement learning environments
+  without executing any test-time rollouts.
+  On the smooth continuous-control Visual Pursuit benchmark we obtain a
+  Pearson correlation of $r = \placeholder{visual\_pursuit\_pearson\_r}$
+  ($N = \placeholder{visual\_pursuit\_N}$), confirming that classical
+  representation drift reliably predicts performance collapse.
+  On the harder Procgen CoinRun benchmark the classical metric collapses
+  ($\rho = \placeholder{procgen\_spearman\_rho}$, $p = \placeholder{procgen\_p}$);
+  semantic weighting partially recovers signal
+  ($\rho = \placeholder{seg\_overall\_rho}$, $p = \placeholder{seg\_p}$).
+  Riemannian analysis on the Grassmann manifold $\mathrm{Gr}(k, 512)$
+  reveals that end-to-end trained encoders produce substantially lower
+  subspace drift than frozen ResNet-18 backbones
+  ($d_\mathrm{geo} = \placeholder{e2e\_geodesic\_k10}$ vs.\ 
+   $\placeholder{frozen\_geodesic\_k10}$ radians at $k = 10$).
+  Finally, a test-time self-supervised adaptation (TTSS) module with a
+  trust-region safeguard reduces catastrophic floor-collapse from
+  $\placeholder{unadapted\_collapse\_rate}\%$ to
+  $\placeholder{safeguarded\_collapse\_rate}\%$ under severe shift.
+  \placeholder{Add one-sentence broader impact statement.}
+\end{abstract}
+
+%% ---- Sections ----
+\input{sections/introduction}
+\input{sections/methodology}
+\input{sections/results}
+\input{sections/related_work}
+\input{sections/conclusion}
+
+%% ---- References ----
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}

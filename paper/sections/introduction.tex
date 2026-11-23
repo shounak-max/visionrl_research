@@ -1,0 +1,40 @@
+%% ============================================================
+%%  Section: Introduction
+%%  Skeleton — \placeholder{} marks where real content is needed.
+%% ============================================================
+
+\section{Introduction}
+\label{sec:intro}
+
+Visual reinforcement learning policies trained on a fixed distribution
+frequently fail silently under even mild distribution shift~\citep{\placeholder{cite_visual_rl_generalization}}.
+Detecting the \emph{competence boundary} — the region of observation space
+where the policy's performance guarantees break down — is therefore a critical
+safety requirement for real-world deployment.
+
+Existing approaches rely on expensive test-time rollouts or access to ground
+truth rewards, neither of which is available at deployment time.
+We ask: \emph{can the representation drift of a frozen encoder, measured
+entirely from observations, predict when the policy will fail?}
+
+\paragraph{Contributions.}
+\begin{enumerate}
+  \item We show that classical representation distance $d_\mathrm{rep}$
+        correlates strongly with performance drop on smooth continuous-control
+        tasks (Pearson $r = \placeholder{visual\_pursuit\_pearson\_r}$,
+        $N = \placeholder{visual\_pursuit\_N}$), but collapses on discrete
+        combinatorial environments (Procgen CoinRun,
+        $\rho = \placeholder{procgen\_spearman\_rho}$).
+  \item We introduce semantically-weighted distance $\tilde{d}_\mathrm{rep}$
+        that partially recovers signal on Procgen
+        ($\rho = \placeholder{seg\_overall\_rho}$,
+         $p = \placeholder{seg\_p}$).
+  \item We provide Riemannian geometry analysis on
+        $\mathrm{Gr}(k, 512)$, showing that end-to-end encoders minimize
+        subspace drift relative to frozen pretrained backbones.
+  \item We deploy a test-time self-supervised adaptation module (TTSS) with
+        a trust-region safeguard that reduces catastrophic floor-collapse
+        by $\placeholder{relative\_collapse\_reduction\_pct}\%$ relative.
+\end{enumerate}
+
+\placeholder{Expand introduction with 2-3 paragraphs of motivation and related work framing.}

@@ -1,0 +1,4 @@
+%% d_va_limitation.tex
+%% Explains the exclusion of the D.Va (differentiable dynamics) baseline.
+
+D.Va (differentiable dynamics agent) requires a differentiable simulator; since the Visual Pursuit environment's closed-form dynamics are not differentiable through PyTorch's autograd graph in our current setup, we exclude D.Va from our comparisons. Future work with a differentiable simulator backend (e.g., Brax or Isaac Gym) would enable this baseline.

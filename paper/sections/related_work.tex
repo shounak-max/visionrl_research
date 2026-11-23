@@ -1,0 +1,25 @@
+%% ============================================================
+%%  Section: Related Work
+%%  Skeleton — \placeholder{} marks references and summaries needed.
+%% ============================================================
+
+\section{Related Work}
+\label{sec:related_work}
+
+\paragraph{Generalization in Visual RL.}
+Generalization in vision-based reinforcement learning has been studied extensively
+under procedural environment generation~\citep{procgen2020} and visual perturbations.
+Data augmentations such as DrQ-v2~\citep{drqv2} and SVEA~\citep{svea2021} improve empirical
+robustness, yet predicting policy failure without environment interactions remains open.
+
+\paragraph{Out-of-Distribution Detection and Representation Drift.}
+Classical out-of-distribution (OOD) detection in supervised vision relies on density
+estimation or feature distance~\citep{\placeholder{cite_ood_detection}}. However, in visual RL,
+feature shifts do not uniformly induce reward degradation; background distractors may create
+substantial feature drift while leaving task competence unaffected.
+
+\paragraph{Test-Time Training and Adaptation.}
+Test-Time Training (TTT)~\citep{sun2020ttt} and TTT++~\citep{liu2021tttplusplus} adapt model
+representations at test time using self-supervised objectives such as contrastive or moment
+matching losses. In control domains, unconstrained adaptation risks catastrophic representation
+collapse, motivating safeguards and trust-region validation~\citep{\placeholder{cite_safeguarded_ttt}}.
