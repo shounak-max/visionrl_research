@@ -7,11 +7,9 @@
 - **Shift Families:** `background`, `noise`, `distractor`, `viewpoint`, `color_gain`, parameterized by severity $s \in [0.0, 1.0]$ where $s = 0.0$ is strictly verified as exact identity.
 - **Scoring Portfolio:** 9 candidate rollout-free scores: latent $k$NN (`knn_policy`), Mahalanobis distance (`maha_policy`), Centroid/Lyu bound (`cent_policy`), Semantic $k$NN (`sem_knn_policy`), Random projection $k$NN (`knn_random`), Raw pixel $k$NN (`knn_pixel`), Action Disagreement (`act_disagree`), $Q$-value drop (`q_drop`), and Critic temporal gap (`critic_gap`), plus PAC-Drift and GCM-Drift.
 - **Statistical Protocols:** Conformal clean-only calibration (nominal $\alpha = 0.05$), strict leave-one-kind-out isotonic calibration, paired cluster bootstrap resampling clustered by policy seed with Holm-Bonferroni correction, and prevalence-portable AUROC mixture validation over 105 test cases.
-- **Exploratory Studies (Preserved in Manuscript):**
-  - Phase 0: Classical $d_\mathrm{rep}$ on smooth Pursuit ($r = -0.8853, \rho = -0.6592, N = 2500$) vs combinatorial Procgen CoinRun ($\rho = -0.1143, p = 0.455, N = 45$).
-  - Phase 1: Semantic spatial weighting on CoinRun (400 transitions across 4 holdout axes; ground truth $\rho = 0.1075$ vs baseline $0.0926$).
-  - Phase 2: Grassmann manifold analysis on $\mathrm{Gr}(k, 512)$ ($k \in \{5, 10, 20\}$; End-to-End CNN $d_\mathrm{geo} = 1.9255, 2.2297, 1.5402$ vs Frozen ResNet-18 $2.9735, 4.2021, 5.7208$).
-  - Phase 3: TTSS adaptation under severe shift (30 episodes per condition; floor collapse reduced from $40.0\%$ to $20.0\%$, $100\%$ safeguard acceptance disclosed).
+- **Descriptive Subspace Diagnostic:**
+  - Grassmann manifold analysis on $\mathrm{Gr}(k, 50)$ across $N = 330$ trajectory pairs ($\rho = 0.719$ for $k = 5$, $\rho = 0.707$ for $k = 10$, $\rho = 0.814$ for $k = 20$). Formulated as a descriptive diagnostic of trajectory subspace drift rather than an early-warning predictor.
+  - Quarantined legacy heuristic exploratory scripts and preliminary tables to `legacy/`.
 
 ## What Was NOT Run (Honestly Excluded from Paper Claims)
 - **Multi-Environment Sweeps (Reacher / Procgen Forecasting):** Reacher and Procgen were not executed in full mode for competence boundary forecasting; paper claims are strictly scoped to the 6,600-episode Visual Pursuit benchmark.

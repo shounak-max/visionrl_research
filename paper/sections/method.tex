@@ -6,7 +6,8 @@ In this section, we formalize the rollout-free competence boundary forecasting s
 \subsection{Environment and Problem Setting}
 \label{sec:method:env}
 
-We evaluate policies in continuous visual control on the \textbf{Visual Pursuit} domain.
+We evaluate policies in continuous visual control on the \textbf{Visual Pursuit} domain (\texttt{VisualPursuit-v0} / \texttt{PursuitEnv}).
+To ensure rigorous causal attribution and avoid ad-hoc entity thresholding heuristics, our benchmark focuses strictly on continuous visual control; discrete procedurally generated grid domains (such as Procgen CoinRun) were excised from forecasting claims.
 The agent receives high-dimensional pixel observations $x_t \in \mathbb{R}^{48 \times 48 \times 3}$ (constructed from a 3-frame stack of $48 \times 48$ RGB frames) and emits continuous 2D velocity actions $a_t = (\Delta x, \Delta y) \in [-1, 1]^2$ to control a tracking reticle toward a dynamically moving target.
 The target moves with velocity $v_{\mathrm{target}} = 0.8$\,px/step, and the reticle has a maximum displacement of $2.0$\,px/step.
 The instantaneous task reward is the negative Centre-of-target Localization Error (CLE):

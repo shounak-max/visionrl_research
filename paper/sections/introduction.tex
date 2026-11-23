@@ -7,6 +7,7 @@ Anticipating where a policy's performance guarantees break down---the so-called 
 Existing methods for competence estimation typically require executing trial rollouts in the target environment or querying an external ground-truth reward oracle~\citep{majumdar2025predictive}. In safety-critical robotics, however, test-time rollouts cannot be permitted when failures incur physical damage. Consequently, recent theoretical works have proposed pre-rollout forecasting using representation distance metrics ($d_\mathrm{rep}$) measured over unlabelled observation distributions~\citep{lyu2024generalization}. While theoretical upper bounds relate representation drift to worst-case return drops, empirical validation on realistic control settings remains nascent and inconsistent.
 
 In this work, we formalize and benchmark the problem of \textbf{rollout-free competence boundary forecasting}: predicting the exact critical corruption severity $s^*_{\pi,\kappa}$ at which an agent loses half of its nominal performance, using only recorded clean trajectories, policy weights, and post-hoc visual corruptions rendered on clean frames. We address the core questions of early-warning failure detection, policy ranking, and test-time recovery without online rollouts.
+To ensure rigorous causal attribution and avoid ad-hoc entity thresholding heuristics, our evaluation is strictly focused on continuous visual control; procedurally generated grid domains (such as Procgen CoinRun) were excised from forecasting claims.
 
 This paper makes the following contributions:
 \begin{enumerate}

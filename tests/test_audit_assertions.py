@@ -152,7 +152,9 @@ def test_adapted_encoder_drives_actions():
 def test_phase3_acceptance_rate_documented():
     """Verify that the 100% acceptance rate is honestly documented in results without failing CI."""
     repo_root = Path(__file__).resolve().parent.parent
-    results_path = repo_root / "paper_artifacts" / "paper_headline_results_combined.json"
+    results_path = repo_root / "legacy" / "paper_artifacts" / "paper_headline_results_combined.json"
+    if not results_path.exists():
+        results_path = repo_root / "paper_artifacts" / "paper_headline_results_combined.json"
     assert results_path.exists(), "Headline results JSON must exist"
 
     with open(results_path) as f:

@@ -18,13 +18,13 @@ def make_env(
     Supported env_ids:
     - 'coinrun' or 'procgen:procgen-coinrun-v0' -> ProcgenCoinRunEnv
     - 'procgen_ood' -> ProcgenOODEnv
-    - 'visual_pursuit' -> VisualPursuitEnv
+    - 'visual_pursuit', 'VisualPursuit-v0', or 'tracking' -> VisualPursuitEnv
     """
     if env_id in ["coinrun", "procgen:procgen-coinrun-v0"]:
         return ProcgenCoinRunEnv(seed=seed, perturbation_config=perturbation_config)
     elif env_id == "procgen_ood":
         return ProcgenOODEnv(seed=seed, perturbation_config=perturbation_config)
-    elif env_id in ["visual_pursuit", "tracking"]:
+    elif env_id in ["visual_pursuit", "VisualPursuit-v0", "tracking"]:
         return VisualPursuitEnv(seed=seed, perturbation_config=perturbation_config)
     else:
         raise ValueError(f"Unknown env_id: '{env_id}'")
