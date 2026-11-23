@@ -17,6 +17,11 @@
       "steps_per_policy": 30000,
       "purpose": "Modern temporal action-contrastive baseline trained to competence gate (<5.0 px CLE)."
     },
+    "baseline_30k_parity": {
+      "policies": 3,
+      "steps_per_policy": 30000,
+      "purpose": "Identical 30,000-step compute budget comparison across DrQ-v2, SVEA, and TACO on identical 48x48 continuous Visual Pursuit."
+    },
     "tta_diagnostic_sweep": {
       "policies": 2,
       "steps_per_policy": 12000,

@@ -14,6 +14,8 @@ import numpy as np
 import pandas as pd
 import torch
 
+from dataclasses import replace
+
 from visionrl.config import make_cfg, get_device, seed_for
 from visionrl.environments import make_env
 from visionrl.experiments.train import eval_cell
@@ -21,15 +23,15 @@ from visionrl.models.drq_agent import DrQAgent
 
 
 def main():
-    cfg = make_cfg("sandbox", "pursuit")
-    cfg = type(cfg)(
-        **{
-            **vars(cfg),
-            "img": 48,
-            "ep_len": 50,
-            "batch": 128,
-            "hidden": 256,
-        }
+    cfg = replace(
+        make_cfg("sandbox"),
+        img=48,
+        ep_len=50,
+        train_steps=12000,
+        seed_steps=600,
+        batch=64,
+        feature_dim=50,
+        hidden=256,
     )
     device = get_device()
     env = make_env(cfg)

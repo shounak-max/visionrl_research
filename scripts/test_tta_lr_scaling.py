@@ -38,7 +38,7 @@ def test_lr_scaling():
         batch=64,
         feature_dim=50,
         hidden=256,
-        tta_buffer=2,
+        tta_buffer=8,
     )
     env = make_env(cfg)
 
@@ -59,8 +59,8 @@ def test_lr_scaling():
             continue
 
         agent = DrQAgent(cfg, variant=variant, seed=seed)
-        # Load encoder weights
-        agent.encoder.load_state_dict(torch.load(ckpt_path, map_location=device))
+        # Load full agent state (encoder, actor, critic)
+        agent.load(torch.load(ckpt_path, map_location=device, weights_only=False))
         agent.eval()
 
         ref_recs = collect_clean(agent, cfg, "ref", 5, env)
@@ -69,6 +69,7 @@ def test_lr_scaling():
         for lr in lrs:
             lr_cfg = replace(cfg, tta_lr=lr, tta_accept_delta=10.0)  # do not reject so we observe full deviation
             step_devs = []
+            first_step_devs = []
             step_loss_drops = []
 
             for ep_idx in range(n_episodes):
@@ -77,7 +78,10 @@ def test_lr_scaling():
                 pol = AdaptedPolicy(agent, lr_cfg, "ttss", (mu, var), clean_stacks)
                 rollout(env, pol.act, s, cfg, shift=sh)
 
-                for d in pol.step_diagnostics:
+                if pol.step_diagnostics:
+                    first_step_devs.append(pol.step_diagnostics[0]["dev"])
+
+                for step_i, d in enumerate(pol.step_diagnostics):
                     step_devs.append(d["dev"])
                     loss_drop = (d["before"] - d["after"]) / max(1e-6, d["before"])
                     step_loss_drops.append(loss_drop)
@@ -85,6 +89,7 @@ def test_lr_scaling():
                         "agent": aid,
                         "lr": lr,
                         "ep_idx": ep_idx,
+                        "step_in_ep": step_i,
                         "dev": d["dev"],
                         "loss_before": d["before"],
                         "loss_after": d["after"],
@@ -92,6 +97,7 @@ def test_lr_scaling():
                     })
 
             devs_arr = np.array(step_devs)
+            first_devs_arr = np.array(first_step_devs)
             drops_arr = np.array(step_loss_drops)
 
             key = f"{aid}_lr_{lr}"
@@ -99,6 +105,8 @@ def test_lr_scaling():
                 "agent": aid,
                 "tta_lr": lr,
                 "n_steps": len(devs_arr),
+                "first_step_median_dev": round(float(np.median(first_devs_arr)), 4) if len(first_devs_arr) else None,
+                "first_step_mean_dev": round(float(np.mean(first_devs_arr)), 4) if len(first_devs_arr) else None,
                 "mean_dev": round(float(np.mean(devs_arr)), 4),
                 "median_dev": round(float(np.median(devs_arr)), 4),
                 "p90_dev": round(float(np.percentile(devs_arr, 90)), 4),

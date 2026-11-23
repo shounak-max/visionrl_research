@@ -77,3 +77,133 @@ def test_ppo_agent():
     a_sampled = ppo.act(obs_u8, rule="sampled")
     assert 0 <= a_greedy < 5
     assert 0 <= a_sampled < 5
+
+
+@pytest.mark.parametrize("variant", ["drqv2", "svea", "taco", "noaug"])
+def test_drq_agent_state_load_roundtrip(variant):
+    """Verify DrQAgent.state() and DrQAgent.load() round-trip identically across all variants.
+    Specifically checks:
+    - encoder weights
+    - actor weights
+    - critic weights
+    - critic_target weights (which differ from critic after updates)
+    - aux weights (for taco variant)
+    - identical deterministic action outputs before and after save/load.
+    """
+    cfg = make_cfg("smoke", "pursuit")
+    ag1 = DrQAgent(cfg, variant=variant, seed=42)
+
+    # Perform updates so weights drift from init and critic_target diverges via tau lerp
+    B = 4
+    rnd = lambda *s: torch.rand(*s, device=ag1.device)
+    for _ in range(3):
+        batch = (
+            rnd(B, 3 * cfg.n_stack, cfg.img, cfg.img) * 255.0,
+            rnd(B, 2) * 2 - 1,
+            rnd(B, 1),
+            torch.full((B, 1), cfg.discount ** cfg.n_step, device=ag1.device),
+            rnd(B, 3 * cfg.n_stack, cfg.img, cfg.img) * 255.0,
+        )
+        aseq = rnd(B, cfg.n_step * 2) if variant == "taco" else None
+        ag1.update(batch, 0.2, aseq=aseq)
+
+    # Save state
+    saved_state = ag1.state()
+    assert isinstance(saved_state, dict)
+    assert "encoder" in saved_state
+    assert "actor" in saved_state
+    assert "critic" in saved_state
+    assert "critic_target" in saved_state
+    assert "aux" in saved_state
+
+    if variant == "taco":
+        assert saved_state["aux"] is not None
+        assert "s" in ag1.aux and "a" in ag1.aux and "g" in ag1.aux
+    else:
+        assert saved_state["aux"] is None
+
+    # Instantiate a second agent with a different seed
+    ag2 = DrQAgent(cfg, variant=variant, seed=123)
+
+    # Confirm weights differ before load
+    p1 = next(ag1.actor.parameters())
+    p2 = next(ag2.actor.parameters())
+    assert not torch.equal(p1, p2)
+
+    # Load state into ag2
+    ag2.load(saved_state)
+
+    # 1. Check encoder weights
+    for k, v in ag1.encoder.state_dict().items():
+        assert torch.equal(v, ag2.encoder.state_dict()[k]), f"Encoder mismatch at key {k}"
+
+    # 2. Check actor weights
+    for k, v in ag1.actor.state_dict().items():
+        assert torch.equal(v, ag2.actor.state_dict()[k]), f"Actor mismatch at key {k}"
+
+    # 3. Check critic weights
+    for k, v in ag1.critic.state_dict().items():
+        assert torch.equal(v, ag2.critic.state_dict()[k]), f"Critic mismatch at key {k}"
+
+    # 4. Check critic_target weights
+    for k, v in ag1.critic_target.state_dict().items():
+        assert torch.equal(v, ag2.critic_target.state_dict()[k]), f"Critic target mismatch at key {k}"
+
+    # 5. Check aux weights (for taco)
+    if variant == "taco":
+        assert ag2.aux is not None
+        for k, v in ag1.aux.state_dict().items():
+            assert torch.equal(v, ag2.aux.state_dict()[k]), f"Aux mismatch at key {k}"
+
+    # 6. Check action outputs
+    rng = np.random.default_rng(999)
+    test_obs = rng.integers(0, 256, (3 * cfg.n_stack, cfg.img, cfg.img), dtype=np.uint8)
+    ag1.eval()
+    ag2.eval()
+    act1 = ag1.act(test_obs)
+    act2 = ag2.act(test_obs)
+    np.testing.assert_allclose(act1, act2, atol=1e-7)
+
+
+def test_drq_agent_load_legacy_encoder_only():
+    """Verify backwards-compatible loading when only encoder weights are in the checkpoint."""
+    cfg = make_cfg("smoke", "pursuit")
+    ag1 = DrQAgent(cfg, variant="drqv2", seed=42)
+    ag2 = DrQAgent(cfg, variant="drqv2", seed=999)
+
+    # Checkpoint dict with only encoder
+    legacy_ckpt = {"encoder": ag1.encoder.state_dict()}
+    with pytest.warns(UserWarning, match="missing 'actor'"):
+        ag2.load(legacy_ckpt)
+
+    for k, v in ag1.encoder.state_dict().items():
+        assert torch.equal(v, ag2.encoder.state_dict()[k])
+
+
+def test_drq_agent_load_raw_encoder_state_dict():
+    """Verify loading raw encoder state_dict directly (e.g. diag checkpoints before fix)."""
+    cfg = make_cfg("smoke", "pursuit")
+    ag1 = DrQAgent(cfg, variant="drqv2", seed=42)
+    ag2 = DrQAgent(cfg, variant="drqv2", seed=999)
+
+    raw_encoder_dict = ag1.encoder.state_dict()
+    with pytest.warns(UserWarning, match="Loading raw encoder-only state dict"):
+        ag2.load(raw_encoder_dict)
+
+    for k, v in ag1.encoder.state_dict().items():
+        assert torch.equal(v, ag2.encoder.state_dict()[k])
+
+
+def test_drq_agent_load_prefixed_state_dict():
+    """Verify loading checkpoint with encoder. prefix."""
+    cfg = make_cfg("smoke", "pursuit")
+    ag1 = DrQAgent(cfg, variant="drqv2", seed=42)
+    ag2 = DrQAgent(cfg, variant="drqv2", seed=999)
+
+    prefixed = {f"encoder.{k}": v for k, v in ag1.encoder.state_dict().items()}
+    with pytest.warns(UserWarning, match="Loading raw encoder-only state dict"):
+        ag2.load(prefixed)
+
+    for k, v in ag1.encoder.state_dict().items():
+        assert torch.equal(v, ag2.encoder.state_dict()[k])
+

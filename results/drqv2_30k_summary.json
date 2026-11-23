@@ -1,0 +1,30 @@
+{
+  "status": "completed",
+  "algorithm": "DrQ-v2",
+  "variant": "drqv2",
+  "seed": 0,
+  "steps_trained": 30000,
+  "elapsed_seconds": 382.87,
+  "steps_per_second": 78.36,
+  "device": "cuda",
+  "hyperparams": {
+    "batch_size": 128,
+    "learning_rate": 0.0003,
+    "img_resolution": "48x48",
+    "episode_length": 50,
+    "seed_steps": 1000,
+    "std_decay_steps": 15000,
+    "svea_alpha": null,
+    "svea_beta": null
+  },
+  "evaluation_clean": {
+    "n_episodes": 20,
+    "mean_cle_px": 5.72,
+    "std_cle_px": 2.49,
+    "success_rate": 0.2,
+    "mean_return": -11.91,
+    "random_floor_cle_px": 22.05,
+    "competence_gate_threshold_px": 5.0,
+    "tracking_competence": "Sub-threshold / Near random floor"
+  }
+}

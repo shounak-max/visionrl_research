@@ -76,12 +76,14 @@ def run_tta_diagnosis():
         if os.path.exists(ckpt_path):
             print(f"\nLoading existing agent {aid} from {ckpt_path}...")
             agent = DrQAgent(cfg, variant=variant, seed=seed)
-            agent.encoder.load_state_dict(torch.load(ckpt_path, map_location=device))
+            agent.load(torch.load(ckpt_path, map_location=device, weights_only=False))
+            agent.eval()
         else:
             print(f"\nTraining agent {aid} for {cfg.train_steps} steps on {device}...")
             agent, tr_df = train_agent(cfg, variant=variant, seed=seed, verbose=False)
-            torch.save(agent.encoder.state_dict(), ckpt_path)
-            print(f"Saved checkpoint to {ckpt_path}. Final eval: {tr_df.iloc[-1].to_dict() if len(tr_df) else 'N/A'}")
+            agent.eval()
+            torch.save(agent.state(), ckpt_path)
+            print(f"Saved full checkpoint to {ckpt_path}. Final eval: {tr_df.iloc[-1].to_dict() if len(tr_df) else 'N/A'}")
 
         ref_recs = collect_clean(agent, cfg, "ref", cfg.ref_eps, env)
         mu, var, clean_stacks = clean_feature_stats(agent, ref_recs, cfg)

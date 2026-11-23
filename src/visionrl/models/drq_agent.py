@@ -2,6 +2,7 @@
 
 import copy
 from typing import Any, Dict, Optional, Tuple
+import warnings
 
 import numpy as np
 import torch
@@ -149,13 +150,88 @@ class DrQAgent:
             encoder=self.encoder.state_dict(),
             actor=self.actor.state_dict(),
             critic=self.critic.state_dict(),
+            critic_target=self.critic_target.state_dict(),
             aux=(self.aux.state_dict() if self.aux is not None else None),
         )
 
     def load(self, st: Dict[str, Any]) -> None:
-        self.encoder.load_state_dict(st["encoder"])
-        self.actor.load_state_dict(st["actor"])
-        self.critic.load_state_dict(st["critic"])
-        self.critic_target = copy.deepcopy(self.critic)
-        if self.aux is not None and st.get("aux") is not None:
-            self.aux.load_state_dict(st["aux"])
+        """Load agent state dictionary.
+        Supports:
+        1. Full checkpoint dict: {'encoder': ..., 'actor': ..., 'critic': ..., ['critic_target': ...], ['aux': ...]}
+        2. Legacy encoder-only dict:
+           - Dict with key 'encoder' (missing 'actor'/'critic')
+           - Dict with key 'encoder_state_dict' or 'state_dict'
+           - Direct encoder state_dict (mapping layer names to tensors)
+        Issues a clear warning when actor or critic weights are missing.
+        """
+        if not isinstance(st, dict):
+            raise TypeError(f"Expected state dictionary, got {type(st).__name__}")
+
+        if "encoder" in st:
+            self.encoder.load_state_dict(st["encoder"])
+
+            if "actor" in st and st["actor"] is not None:
+                self.actor.load_state_dict(st["actor"])
+            else:
+                warnings.warn(
+                    "Checkpoint is missing 'actor' state; actor remains randomly initialized!",
+                    UserWarning,
+                    stacklevel=2,
+                )
+
+            if "critic" in st and st["critic"] is not None:
+                self.critic.load_state_dict(st["critic"])
+                if "critic_target" in st and st["critic_target"] is not None:
+                    self.critic_target.load_state_dict(st["critic_target"])
+                else:
+                    self.critic_target = copy.deepcopy(self.critic)
+            else:
+                warnings.warn(
+                    "Checkpoint is missing 'critic' state; critic remains randomly initialized!",
+                    UserWarning,
+                    stacklevel=2,
+                )
+                self.critic_target = copy.deepcopy(self.critic)
+
+            if self.aux is not None and st.get("aux") is not None:
+                self.aux.load_state_dict(st["aux"])
+
+        elif "encoder_state_dict" in st or "state_dict" in st:
+            warnings.warn(
+                "Loading legacy encoder-only checkpoint; actor and critic remain randomly initialized!",
+                UserWarning,
+                stacklevel=2,
+            )
+            raw = st.get("encoder_state_dict", st.get("state_dict"))
+            if any(k.startswith("encoder.") for k in raw.keys()):
+                raw = {k.replace("encoder.", ""): v for k, v in raw.items() if k.startswith("encoder.")}
+            try:
+                self.encoder.load_state_dict(raw)
+            except RuntimeError as e:
+                warnings.warn(
+                    f"Could not strictly load legacy encoder weights ({e}); attempting loose load.",
+                    UserWarning,
+                    stacklevel=2,
+                )
+                self.encoder.load_state_dict(raw, strict=False)
+            self.critic_target = copy.deepcopy(self.critic)
+
+        else:
+            warnings.warn(
+                "Loading raw encoder-only state dict; actor and critic remain randomly initialized!",
+                UserWarning,
+                stacklevel=2,
+            )
+            raw = st
+            if any(k.startswith("encoder.") for k in raw.keys()):
+                raw = {k.replace("encoder.", ""): v for k, v in raw.items() if k.startswith("encoder.")}
+            try:
+                self.encoder.load_state_dict(raw)
+            except RuntimeError as e:
+                warnings.warn(
+                    f"Could not strictly load raw encoder weights ({e}); attempting loose load.",
+                    UserWarning,
+                    stacklevel=2,
+                )
+                self.encoder.load_state_dict(raw, strict=False)
+            self.critic_target = copy.deepcopy(self.critic)
