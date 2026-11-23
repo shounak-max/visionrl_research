@@ -71,7 +71,9 @@ def run_tta_diagnosis():
 
     for variant, seed in agents_to_eval:
         aid = f"{variant}_s{seed}"
-        ckpt_path = f"checkpoints/diag_{aid}.pt"
+        ckpt_path = f"checkpoints/{variant}_30k_s{seed}.pt"
+        if not os.path.exists(ckpt_path):
+            ckpt_path = f"results/{variant}_30k_checkpoint_s{seed}.pt"
 
         if os.path.exists(ckpt_path):
             print(f"\nLoading existing agent {aid} from {ckpt_path}...")

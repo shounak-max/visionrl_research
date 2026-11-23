@@ -53,7 +53,9 @@ def test_lr_scaling():
 
     for variant, seed in agents_to_test:
         aid = f"{variant}_s{seed}"
-        ckpt_path = Path(f"checkpoints/diag_{aid}.pt")
+        ckpt_path = Path(f"checkpoints/{variant}_30k_s{seed}.pt")
+        if not ckpt_path.exists():
+            ckpt_path = Path(f"results/{variant}_30k_checkpoint_s{seed}.pt")
         if not ckpt_path.exists():
             print(f"Skipping {aid}: checkpoint not found")
             continue

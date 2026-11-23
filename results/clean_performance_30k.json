@@ -1,39 +1,44 @@
 {
-  "taco_s0": {
-    "algorithm": "TACO (Temporal Action-Contrastive RL)",
-    "variant": "taco",
-    "seed": 0,
-    "train_steps": 30000,
-    "clean_mean_cle_px": 4.57,
-    "clean_success_rate": 0.55,
-    "competence_status": "Passes competence gate (mean CLE < 5.0 px)",
-    "steps_per_second": 72.57,
-    "elapsed_seconds": 413.41
-  },
   "drqv2_s0": {
     "algorithm": "DrQ-v2",
     "variant": "drqv2",
     "seed": 0,
-    "train_steps": 30000,
+    "training_steps": 30000,
+    "n_eval_episodes": 20,
     "clean_mean_cle_px": 5.72,
     "clean_cle_std_px": 2.49,
     "clean_success_rate": 0.2,
     "mean_return": -11.91,
-    "competence_status": "Sub-threshold / Near random floor",
-    "steps_per_second": 78.36,
-    "elapsed_seconds": 382.87
+    "random_floor_cle_px": 22.05,
+    "target_threshold_px": 5.0,
+    "competence_status": "Sub-threshold / Near random floor"
   },
   "svea_s0": {
     "algorithm": "SVEA",
     "variant": "svea",
     "seed": 0,
-    "train_steps": 30000,
+    "training_steps": 30000,
+    "n_eval_episodes": 20,
     "clean_mean_cle_px": 5.43,
     "clean_cle_std_px": 2.95,
     "clean_success_rate": 0.2,
     "mean_return": -11.3,
-    "competence_status": "Sub-threshold / Near random floor",
-    "steps_per_second": 54.23,
-    "elapsed_seconds": 553.21
+    "random_floor_cle_px": 22.05,
+    "target_threshold_px": 5.0,
+    "competence_status": "Sub-threshold / Near random floor"
+  },
+  "taco_s0": {
+    "algorithm": "TACO",
+    "variant": "taco",
+    "seed": 0,
+    "training_steps": 30000,
+    "n_eval_episodes": 20,
+    "clean_mean_cle_px": 4.57,
+    "clean_cle_std_px": 2.96,
+    "clean_success_rate": 0.55,
+    "mean_return": -9.52,
+    "random_floor_cle_px": 22.05,
+    "target_threshold_px": 5.0,
+    "competence_status": "Passes competence gate (<5.0 px)"
   }
 }
