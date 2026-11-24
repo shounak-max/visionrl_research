@@ -1,0 +1,6 @@
+agent,variant,seed,shift_kind,clean_success_rate,halving_threshold,s_crit,censored,cliffness,total_drop,min_success_rate,max_mean_cle_px
+TACO,taco,0,background,0.55,0.275,0.31,False,0.4545,0.55,0.0,23.97
+TACO,taco,0,noise,0.55,0.275,0.1214,False,0.6364,0.55,0.0,26.79
+TACO,taco,0,distractor,0.55,0.275,0.2167,False,0.4545,0.55,0.0,19.01
+TACO,taco,0,viewpoint,0.55,0.275,1.0,True,0.5,0.1,0.45,6.12
+TACO,taco,0,color_gain,0.55,0.275,0.4917,False,0.75,0.4,0.15,18.49

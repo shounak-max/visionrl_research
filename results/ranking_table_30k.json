@@ -1,0 +1,632 @@
+[
+  {
+    "predictor": "knn_policy",
+    "kind": "background",
+    "n_policies": 3,
+    "tau": 0.333,
+    "regret": 0.075,
+    "true_spread": 0.042,
+    "pred_spread": 0.311
+  },
+  {
+    "predictor": "knn_policy",
+    "kind": "color_gain",
+    "n_policies": 3,
+    "tau": 1.0,
+    "regret": 0.0,
+    "true_spread": 0.112,
+    "pred_spread": 0.106
+  },
+  {
+    "predictor": "knn_policy",
+    "kind": "distractor",
+    "n_policies": 3,
+    "tau": -0.816,
+    "regret": 0.067,
+    "true_spread": 0.031,
+    "pred_spread": 0.008
+  },
+  {
+    "predictor": "knn_policy",
+    "kind": "noise",
+    "n_policies": 3,
+    "tau": 0.816,
+    "regret": 0.0,
+    "true_spread": 0.031,
+    "pred_spread": 0.039
+  },
+  {
+    "predictor": "knn_policy",
+    "kind": "viewpoint",
+    "n_policies": 3,
+    "tau": 0.0,
+    "regret": 0.425,
+    "true_spread": 0.375,
+    "pred_spread": 0.063
+  },
+  {
+    "predictor": "pac_drift_l0",
+    "kind": "background",
+    "n_policies": 3,
+    "tau": -0.333,
+    "regret": 0.075,
+    "true_spread": 0.042,
+    "pred_spread": 0.212
+  },
+  {
+    "predictor": "pac_drift_l0",
+    "kind": "color_gain",
+    "n_policies": 3,
+    "tau": 1.0,
+    "regret": 0.0,
+    "true_spread": 0.112,
+    "pred_spread": 0.236
+  },
+  {
+    "predictor": "pac_drift_l0",
+    "kind": "distractor",
+    "n_policies": 3,
+    "tau": -0.816,
+    "regret": 0.067,
+    "true_spread": 0.031,
+    "pred_spread": 0.176
+  },
+  {
+    "predictor": "pac_drift_l0",
+    "kind": "noise",
+    "n_policies": 3,
+    "tau": 0.0,
+    "regret": 0.067,
+    "true_spread": 0.031,
+    "pred_spread": 0.02
+  },
+  {
+    "predictor": "pac_drift_l0",
+    "kind": "viewpoint",
+    "n_policies": 3,
+    "tau": -0.816,
+    "regret": 0.787,
+    "true_spread": 0.375,
+    "pred_spread": 0.008
+  },
+  {
+    "predictor": "pac_drift_l1",
+    "kind": "background",
+    "n_policies": 3,
+    "tau": -0.333,
+    "regret": 0.075,
+    "true_spread": 0.042,
+    "pred_spread": 0.212
+  },
+  {
+    "predictor": "pac_drift_l1",
+    "kind": "color_gain",
+    "n_policies": 3,
+    "tau": 1.0,
+    "regret": 0.0,
+    "true_spread": 0.112,
+    "pred_spread": 0.236
+  },
+  {
+    "predictor": "pac_drift_l1",
+    "kind": "distractor",
+    "n_policies": 3,
+    "tau": -0.816,
+    "regret": 0.067,
+    "true_spread": 0.031,
+    "pred_spread": 0.176
+  },
+  {
+    "predictor": "pac_drift_l1",
+    "kind": "noise",
+    "n_policies": 3,
+    "tau": 0.0,
+    "regret": 0.067,
+    "true_spread": 0.031,
+    "pred_spread": 0.02
+  },
+  {
+    "predictor": "pac_drift_l1",
+    "kind": "viewpoint",
+    "n_policies": 3,
+    "tau": -0.816,
+    "regret": 0.787,
+    "true_spread": 0.375,
+    "pred_spread": 0.008
+  },
+  {
+    "predictor": "pac_drift",
+    "kind": "background",
+    "n_policies": 3,
+    "tau": -0.333,
+    "regret": 0.075,
+    "true_spread": 0.042,
+    "pred_spread": 0.212
+  },
+  {
+    "predictor": "pac_drift",
+    "kind": "color_gain",
+    "n_policies": 3,
+    "tau": 1.0,
+    "regret": 0.0,
+    "true_spread": 0.112,
+    "pred_spread": 0.236
+  },
+  {
+    "predictor": "pac_drift",
+    "kind": "distractor",
+    "n_policies": 3,
+    "tau": -0.816,
+    "regret": 0.067,
+    "true_spread": 0.031,
+    "pred_spread": 0.176
+  },
+  {
+    "predictor": "pac_drift",
+    "kind": "noise",
+    "n_policies": 3,
+    "tau": 0.0,
+    "regret": 0.067,
+    "true_spread": 0.031,
+    "pred_spread": 0.02
+  },
+  {
+    "predictor": "pac_drift",
+    "kind": "viewpoint",
+    "n_policies": 3,
+    "tau": -0.816,
+    "regret": 0.787,
+    "true_spread": 0.375,
+    "pred_spread": 0.008
+  },
+  {
+    "predictor": "gcm_drift",
+    "kind": "background",
+    "n_policies": 3,
+    "tau": -0.333,
+    "regret": 0.075,
+    "true_spread": 0.042,
+    "pred_spread": 0.232
+  },
+  {
+    "predictor": "gcm_drift",
+    "kind": "color_gain",
+    "n_policies": 3,
+    "tau": null,
+    "regret": 0.158,
+    "true_spread": 0.112,
+    "pred_spread": 0.0
+  },
+  {
+    "predictor": "gcm_drift",
+    "kind": "distractor",
+    "n_policies": 3,
+    "tau": null,
+    "regret": 0.044,
+    "true_spread": 0.031,
+    "pred_spread": 0.0
+  },
+  {
+    "predictor": "gcm_drift",
+    "kind": "noise",
+    "n_policies": 3,
+    "tau": 0.0,
+    "regret": 0.067,
+    "true_spread": 0.031,
+    "pred_spread": 0.247
+  },
+  {
+    "predictor": "gcm_drift",
+    "kind": "viewpoint",
+    "n_policies": 3,
+    "tau": null,
+    "regret": 0.525,
+    "true_spread": 0.375,
+    "pred_spread": 0.0
+  },
+  {
+    "predictor": "maha_policy",
+    "kind": "background",
+    "n_policies": 3,
+    "tau": 0.333,
+    "regret": 0.075,
+    "true_spread": 0.042,
+    "pred_spread": 0.308
+  },
+  {
+    "predictor": "maha_policy",
+    "kind": "color_gain",
+    "n_policies": 3,
+    "tau": 1.0,
+    "regret": 0.0,
+    "true_spread": 0.112,
+    "pred_spread": 0.071
+  },
+  {
+    "predictor": "maha_policy",
+    "kind": "distractor",
+    "n_policies": 3,
+    "tau": 0.816,
+    "regret": 0.0,
+    "true_spread": 0.031,
+    "pred_spread": 0.311
+  },
+  {
+    "predictor": "maha_policy",
+    "kind": "noise",
+    "n_policies": 3,
+    "tau": 0.0,
+    "regret": 0.067,
+    "true_spread": 0.031,
+    "pred_spread": 0.012
+  },
+  {
+    "predictor": "maha_policy",
+    "kind": "viewpoint",
+    "n_policies": 3,
+    "tau": null,
+    "regret": 0.525,
+    "true_spread": 0.375,
+    "pred_spread": 0.0
+  },
+  {
+    "predictor": "cent_policy",
+    "kind": "background",
+    "n_policies": 3,
+    "tau": -0.333,
+    "regret": 0.075,
+    "true_spread": 0.042,
+    "pred_spread": 0.028
+  },
+  {
+    "predictor": "cent_policy",
+    "kind": "color_gain",
+    "n_policies": 3,
+    "tau": null,
+    "regret": 0.158,
+    "true_spread": 0.112,
+    "pred_spread": 0.0
+  },
+  {
+    "predictor": "cent_policy",
+    "kind": "distractor",
+    "n_policies": 3,
+    "tau": null,
+    "regret": 0.044,
+    "true_spread": 0.031,
+    "pred_spread": 0.0
+  },
+  {
+    "predictor": "cent_policy",
+    "kind": "noise",
+    "n_policies": 3,
+    "tau": null,
+    "regret": 0.044,
+    "true_spread": 0.031,
+    "pred_spread": 0.0
+  },
+  {
+    "predictor": "cent_policy",
+    "kind": "viewpoint",
+    "n_policies": 3,
+    "tau": null,
+    "regret": 0.525,
+    "true_spread": 0.375,
+    "pred_spread": 0.0
+  },
+  {
+    "predictor": "sem_knn_policy",
+    "kind": "background",
+    "n_policies": 3,
+    "tau": 0.333,
+    "regret": 0.075,
+    "true_spread": 0.042,
+    "pred_spread": 0.258
+  },
+  {
+    "predictor": "sem_knn_policy",
+    "kind": "color_gain",
+    "n_policies": 3,
+    "tau": 0.816,
+    "regret": 0.113,
+    "true_spread": 0.112,
+    "pred_spread": 0.156
+  },
+  {
+    "predictor": "sem_knn_policy",
+    "kind": "distractor",
+    "n_policies": 3,
+    "tau": -0.816,
+    "regret": 0.067,
+    "true_spread": 0.031,
+    "pred_spread": 0.196
+  },
+  {
+    "predictor": "sem_knn_policy",
+    "kind": "noise",
+    "n_policies": 3,
+    "tau": 0.0,
+    "regret": 0.067,
+    "true_spread": 0.031,
+    "pred_spread": 0.025
+  },
+  {
+    "predictor": "sem_knn_policy",
+    "kind": "viewpoint",
+    "n_policies": 3,
+    "tau": -1.0,
+    "regret": 0.85,
+    "true_spread": 0.375,
+    "pred_spread": 0.227
+  },
+  {
+    "predictor": "sem_knn_uniform",
+    "kind": "background",
+    "n_policies": 3,
+    "tau": 0.333,
+    "regret": 0.075,
+    "true_spread": 0.042,
+    "pred_spread": 0.242
+  },
+  {
+    "predictor": "sem_knn_uniform",
+    "kind": "color_gain",
+    "n_policies": 3,
+    "tau": 0.333,
+    "regret": 0.0,
+    "true_spread": 0.112,
+    "pred_spread": 0.099
+  },
+  {
+    "predictor": "sem_knn_uniform",
+    "kind": "distractor",
+    "n_policies": 3,
+    "tau": 0.816,
+    "regret": 0.0,
+    "true_spread": 0.031,
+    "pred_spread": 0.004
+  },
+  {
+    "predictor": "sem_knn_uniform",
+    "kind": "noise",
+    "n_policies": 3,
+    "tau": null,
+    "regret": 0.044,
+    "true_spread": 0.031,
+    "pred_spread": 0.0
+  },
+  {
+    "predictor": "sem_knn_uniform",
+    "kind": "viewpoint",
+    "n_policies": 3,
+    "tau": 0.816,
+    "regret": 0.363,
+    "true_spread": 0.375,
+    "pred_spread": 0.095
+  },
+  {
+    "predictor": "knn_random",
+    "kind": "background",
+    "n_policies": 3,
+    "tau": 0.0,
+    "regret": 0.075,
+    "true_spread": 0.042,
+    "pred_spread": 0.0
+  },
+  {
+    "predictor": "knn_random",
+    "kind": "color_gain",
+    "n_policies": 3,
+    "tau": 1.0,
+    "regret": 0.0,
+    "true_spread": 0.112,
+    "pred_spread": 0.019
+  },
+  {
+    "predictor": "knn_random",
+    "kind": "distractor",
+    "n_policies": 3,
+    "tau": 0.0,
+    "regret": 0.067,
+    "true_spread": 0.031,
+    "pred_spread": 0.007
+  },
+  {
+    "predictor": "knn_random",
+    "kind": "noise",
+    "n_policies": 3,
+    "tau": -0.816,
+    "regret": 0.067,
+    "true_spread": 0.031,
+    "pred_spread": 0.014
+  },
+  {
+    "predictor": "knn_random",
+    "kind": "viewpoint",
+    "n_policies": 3,
+    "tau": null,
+    "regret": 0.525,
+    "true_spread": 0.375,
+    "pred_spread": 0.0
+  },
+  {
+    "predictor": "knn_pixel",
+    "kind": "background",
+    "n_policies": 3,
+    "tau": -0.333,
+    "regret": 0.075,
+    "true_spread": 0.042,
+    "pred_spread": 0.0
+  },
+  {
+    "predictor": "knn_pixel",
+    "kind": "color_gain",
+    "n_policies": 3,
+    "tau": 1.0,
+    "regret": 0.0,
+    "true_spread": 0.112,
+    "pred_spread": 0.028
+  },
+  {
+    "predictor": "knn_pixel",
+    "kind": "distractor",
+    "n_policies": 3,
+    "tau": -0.816,
+    "regret": 0.067,
+    "true_spread": 0.031,
+    "pred_spread": 0.003
+  },
+  {
+    "predictor": "knn_pixel",
+    "kind": "noise",
+    "n_policies": 3,
+    "tau": -0.816,
+    "regret": 0.067,
+    "true_spread": 0.031,
+    "pred_spread": 0.025
+  },
+  {
+    "predictor": "knn_pixel",
+    "kind": "viewpoint",
+    "n_policies": 3,
+    "tau": null,
+    "regret": 0.525,
+    "true_spread": 0.375,
+    "pred_spread": 0.0
+  },
+  {
+    "predictor": "act_disagree",
+    "kind": "background",
+    "n_policies": 3,
+    "tau": 0.333,
+    "regret": 0.075,
+    "true_spread": 0.042,
+    "pred_spread": 0.254
+  },
+  {
+    "predictor": "act_disagree",
+    "kind": "color_gain",
+    "n_policies": 3,
+    "tau": 1.0,
+    "regret": 0.0,
+    "true_spread": 0.112,
+    "pred_spread": 0.071
+  },
+  {
+    "predictor": "act_disagree",
+    "kind": "distractor",
+    "n_policies": 3,
+    "tau": -0.816,
+    "regret": 0.067,
+    "true_spread": 0.031,
+    "pred_spread": 0.005
+  },
+  {
+    "predictor": "act_disagree",
+    "kind": "noise",
+    "n_policies": 3,
+    "tau": 0.816,
+    "regret": 0.0,
+    "true_spread": 0.031,
+    "pred_spread": 0.019
+  },
+  {
+    "predictor": "act_disagree",
+    "kind": "viewpoint",
+    "n_policies": 3,
+    "tau": -0.333,
+    "regret": 0.725,
+    "true_spread": 0.375,
+    "pred_spread": 0.01
+  },
+  {
+    "predictor": "q_drop",
+    "kind": "background",
+    "n_policies": 3,
+    "tau": 0.333,
+    "regret": 0.075,
+    "true_spread": 0.042,
+    "pred_spread": 0.364
+  },
+  {
+    "predictor": "q_drop",
+    "kind": "color_gain",
+    "n_policies": 3,
+    "tau": 0.333,
+    "regret": 0.0,
+    "true_spread": 0.112,
+    "pred_spread": 0.062
+  },
+  {
+    "predictor": "q_drop",
+    "kind": "distractor",
+    "n_policies": 3,
+    "tau": 0.816,
+    "regret": 0.0,
+    "true_spread": 0.031,
+    "pred_spread": 0.009
+  },
+  {
+    "predictor": "q_drop",
+    "kind": "noise",
+    "n_policies": 3,
+    "tau": 1.0,
+    "regret": 0.0,
+    "true_spread": 0.031,
+    "pred_spread": 0.001
+  },
+  {
+    "predictor": "q_drop",
+    "kind": "viewpoint",
+    "n_policies": 3,
+    "tau": -0.333,
+    "regret": 0.85,
+    "true_spread": 0.375,
+    "pred_spread": 0.21
+  },
+  {
+    "predictor": "critic_gap",
+    "kind": "background",
+    "n_policies": 3,
+    "tau": 0.333,
+    "regret": 0.075,
+    "true_spread": 0.042,
+    "pred_spread": 0.245
+  },
+  {
+    "predictor": "critic_gap",
+    "kind": "color_gain",
+    "n_policies": 3,
+    "tau": -0.333,
+    "regret": 0.225,
+    "true_spread": 0.112,
+    "pred_spread": 0.135
+  },
+  {
+    "predictor": "critic_gap",
+    "kind": "distractor",
+    "n_policies": 3,
+    "tau": 0.0,
+    "regret": 0.067,
+    "true_spread": 0.031,
+    "pred_spread": 0.009
+  },
+  {
+    "predictor": "critic_gap",
+    "kind": "noise",
+    "n_policies": 3,
+    "tau": 0.0,
+    "regret": 0.067,
+    "true_spread": 0.031,
+    "pred_spread": 0.056
+  },
+  {
+    "predictor": "critic_gap",
+    "kind": "viewpoint",
+    "n_policies": 3,
+    "tau": -0.333,
+    "regret": 0.85,
+    "true_spread": 0.375,
+    "pred_spread": 0.169
+  }
+]

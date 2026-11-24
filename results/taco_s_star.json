@@ -1,0 +1,85 @@
+{
+  "metadata": {
+    "agent": "TACO",
+    "variant": "taco",
+    "training_steps": 30000,
+    "seed": 0,
+    "clean_success_rate": 0.55,
+    "clean_mean_cle_px": 4.56,
+    "halving_threshold": 0.275,
+    "n_eval_episodes_per_cell": 20,
+    "random_floor_cle_px": 21.44
+  },
+  "critical_severities": [
+    {
+      "agent": "TACO",
+      "variant": "taco",
+      "seed": 0,
+      "shift_kind": "background",
+      "clean_success_rate": 0.55,
+      "halving_threshold": 0.275,
+      "s_crit": 0.31,
+      "censored": false,
+      "cliffness": 0.4545,
+      "total_drop": 0.55,
+      "min_success_rate": 0.0,
+      "max_mean_cle_px": 23.97
+    },
+    {
+      "agent": "TACO",
+      "variant": "taco",
+      "seed": 0,
+      "shift_kind": "noise",
+      "clean_success_rate": 0.55,
+      "halving_threshold": 0.275,
+      "s_crit": 0.1214,
+      "censored": false,
+      "cliffness": 0.6364,
+      "total_drop": 0.55,
+      "min_success_rate": 0.0,
+      "max_mean_cle_px": 26.79
+    },
+    {
+      "agent": "TACO",
+      "variant": "taco",
+      "seed": 0,
+      "shift_kind": "distractor",
+      "clean_success_rate": 0.55,
+      "halving_threshold": 0.275,
+      "s_crit": 0.2167,
+      "censored": false,
+      "cliffness": 0.4545,
+      "total_drop": 0.55,
+      "min_success_rate": 0.0,
+      "max_mean_cle_px": 19.01
+    },
+    {
+      "agent": "TACO",
+      "variant": "taco",
+      "seed": 0,
+      "shift_kind": "viewpoint",
+      "clean_success_rate": 0.55,
+      "halving_threshold": 0.275,
+      "s_crit": 1.0,
+      "censored": true,
+      "cliffness": 0.5,
+      "total_drop": 0.1,
+      "min_success_rate": 0.45,
+      "max_mean_cle_px": 6.12
+    },
+    {
+      "agent": "TACO",
+      "variant": "taco",
+      "seed": 0,
+      "shift_kind": "color_gain",
+      "clean_success_rate": 0.55,
+      "halving_threshold": 0.275,
+      "s_crit": 0.4917,
+      "censored": false,
+      "cliffness": 0.75,
+      "total_drop": 0.4,
+      "min_success_rate": 0.15,
+      "max_mean_cle_px": 18.49
+    }
+  ]
+}

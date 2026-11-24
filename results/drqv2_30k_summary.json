@@ -26,5 +26,25 @@
     "random_floor_cle_px": 22.05,
     "competence_gate_threshold_px": 5.0,
     "tracking_competence": "Sub-threshold / Near random floor"
+  },
+  "failure_forecasting_metrics": {
+    "knn_policy": {
+      "auroc": 0.904,
+      "auprc": 0.99,
+      "tau_severity": 0.273,
+      "tau_cliff": 0.527
+    },
+    "act_disagree": {
+      "auroc": 0.836,
+      "tau_severity": 0.356
+    },
+    "q_drop": {
+      "auroc": 0.834,
+      "tau_severity": 0.242
+    },
+    "pac_drift": {
+      "auroc": 0.868,
+      "tau_severity": 0.356
+    }
   }
 }
