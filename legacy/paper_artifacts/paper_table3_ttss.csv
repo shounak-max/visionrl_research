@@ -1,4 +1,0 @@
-Adaptation Mechanism,Mean Tracking Error (px),Floor Collapse Rate (%),Acceptance Rate (%),Latency (ms/step)
-Un-adapted Baseline,14.49,40.0%,N/A,0.00
-Naive TTT (Un-safeguarded),14.49,40.0%,100.0%,46.90
-Safeguarded TTSS (Trust-Region),13.12,20.0%,100.0%,46.43
