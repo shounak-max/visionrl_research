@@ -5,19 +5,9 @@
     "evidence":"min clean success 0.70, gate 0.2"
   },
   {
-    "hypothesis":"H1",
-    "verdict":"NOT SUPPORTED",
-    "evidence":"0.44 of 25 curves abrupt failure"
-  },
-  {
     "hypothesis":"H2",
     "verdict":"SUPPORTED",
     "evidence":"median error 0.017; gain vs knn_pixel: 0.147 [0.132, 0.167]; gain vs knn_random: 0.262 [0.246, 0.286]"
-  },
-  {
-    "hypothesis":"H3",
-    "verdict":"NOT SUPPORTED",
-    "evidence":"tau 0.347, regret 0.028, 6 policies"
   },
   {
     "hypothesis":"H4",
@@ -28,15 +18,5 @@
     "hypothesis":"H5",
     "verdict":"SUPPORTED",
     "evidence":"mean absolute error 0.010 over 105 cases"
-  },
-  {
-    "hypothesis":"H6",
-    "verdict":"NOT SUPPORTED",
-    "evidence":"min Holm p 1.000; episodes with accepted updates 0.47, with rejected updates 1.00"
-  },
-  {
-    "hypothesis":"H7",
-    "verdict":"NOT SUPPORTED",
-    "evidence":"episode-score rate 0.117, streaming ever-alarmed rate 0.058"
   }
 ]

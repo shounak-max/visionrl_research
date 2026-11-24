@@ -72,9 +72,9 @@ def evaluate_metrics():
     env = make_env(cfg)
 
     agents_info = [
-        ("DrQ-v2", "drqv2", 0, "results/drqv2_30k_checkpoint_s0.pt"),
-        ("SVEA", "svea", 0, "results/svea_30k_checkpoint_s0.pt"),
-        ("TACO", "taco", 0, "results/taco_checkpoint_s0.pt"),
+        ("DrQ-v2", "drqv2", 0, "checkpoints/drqv2_30k_s0.pt"),
+        ("SVEA", "svea", 0, "checkpoints/svea_30k_s0.pt"),
+        ("TACO", "taco", 0, "checkpoints/taco_30k_s0.pt"),
     ]
 
     shifts = [

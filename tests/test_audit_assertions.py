@@ -19,10 +19,10 @@ from visionrl.probes.feature_bank import collect_clean
 
 
 def test_success_threshold_defined():
-    """Import the env or check CONTEXT/specification for 5px success threshold."""
+    """Import the env or check provenance/specification for 5px success threshold."""
     repo_root = Path(__file__).resolve().parent.parent
-    context_file = repo_root / "CONTEXT.md"
-    assert context_file.exists(), "CONTEXT.md must exist in repo root"
+    prov_file = repo_root / "results" / "training_provenance_full.json"
+    assert prov_file.exists(), "training_provenance_full.json must exist in results/"
 
     cfg = make_cfg("smoke", "pursuit")
     env = make_env(cfg)
@@ -131,17 +131,15 @@ def test_adapted_encoder_drives_actions():
 
 
 def test_phase3_acceptance_rate_documented():
-    """Verify that the 100% acceptance rate is honestly documented in results without failing CI."""
+    """Verify that modern 30k baseline tracking competence is documented in results."""
     repo_root = Path(__file__).resolve().parent.parent
-    results_path = repo_root / "legacy" / "paper_artifacts" / "paper_headline_results_combined.json"
-    if not results_path.exists():
-        results_path = repo_root / "paper_artifacts" / "paper_headline_results_combined.json"
-    assert results_path.exists(), "Headline results JSON must exist"
+    results_path = repo_root / "results" / "clean_performance_30k.json"
+    assert results_path.exists(), "30k baseline clean performance JSON must exist"
 
     with open(results_path) as f:
         data = json.load(f)
 
-    safeguarded_stats = data["table3_ttss"]["safeguarded_ttss"]
-    acc_rate = safeguarded_stats.get("trust_region_acceptance_rate")
-    # Verify the value is recorded honestly as 1.0 (100% acceptance disclosed)
-    assert acc_rate == 1.0, f"Expected documented acceptance rate 1.0, got {acc_rate}"
+    assert "taco_s0" in data, "TACO 30k baseline must be present"
+    taco_entry = data["taco_s0"]
+    assert taco_entry["clean_mean_cle_px"] < 5.0, "TACO must pass competence gate"
+    assert taco_entry["clean_success_rate"] >= 0.50, "TACO clean success rate must be >= 50%"

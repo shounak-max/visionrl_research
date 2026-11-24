@@ -5,110 +5,137 @@
   "success_criterion": "episode-mean CLE < 5.0 px",
   "random_floor_cle_px": 22.05,
   "collapse_threshold_px": 17.64,
-  "total_training_steps_per_seed": 50000,
+  "total_training_steps_per_policy": 30000,
+  "benchmark_focus": "30,000-Step Baseline Parity Benchmark (DrQ-v2, SVEA, TACO)",
   "compute_budgets": {
-    "authoritative_benchmark": {
-      "policies": 6,
-      "steps_per_policy": 50000,
-      "purpose": "Published 6,600-episode empirical evaluation, boundary forecasting, failure prediction, and policy ranking."
+    "baseline_30k_parity": {
+      "policies": 3,
+      "steps_per_policy": 30000,
+      "purpose": "Identical 30,000-step compute budget comparison across DrQ-v2, SVEA, and TACO on identical 48x48 continuous Visual Pursuit."
     },
     "taco_modern_baseline": {
       "policies": 1,
       "steps_per_policy": 30000,
       "purpose": "Modern temporal action-contrastive baseline trained to competence gate (<5.0 px CLE)."
     },
-    "baseline_30k_parity": {
-      "policies": 3,
-      "steps_per_policy": 30000,
-      "purpose": "Identical 30,000-step compute budget comparison across DrQ-v2, SVEA, and TACO on identical 48x48 continuous Visual Pursuit."
+    "authoritative_benchmark": {
+      "policies": 6,
+      "steps_per_policy": 50000,
+      "purpose": "Historical 6,600-episode empirical evaluation, boundary forecasting, failure prediction, and policy ranking."
     }
   },
   "recipes": {
     "drqv2": {
+      "algorithm": "DrQ-v2",
       "description": "Standard DrQ-v2 with random shift augmentation on both actor and critic",
-      "seeds": [
-        0,
-        1,
-        2
-      ],
-      "final_eval": [
-        {
-          "seed": 0,
-          "steps": 50000,
-          "success": 0.8,
-          "cle_px": 3.43,
-          "return": -7.14
-        },
-        {
-          "seed": 1,
-          "steps": 50000,
-          "success": 0.8,
-          "cle_px": 3.48,
-          "return": -7.24
-        },
-        {
-          "seed": 2,
-          "steps": 50000,
-          "success": 0.8,
-          "cle_px": 3.62,
-          "return": -7.54
-        }
-      ]
+      "seed": 0,
+      "steps": 30000,
+      "hyperparams": {
+        "batch_size": 128,
+        "learning_rate": 0.0003,
+        "img_resolution": "48x48",
+        "episode_length": 50,
+        "seed_steps": 1000,
+        "std_decay_steps": 15000,
+        "feature_dim": 50,
+        "hidden": 256
+      },
+      "clean_eval": {
+        "n_episodes": 20,
+        "mean_cle_px": 5.72,
+        "std_cle_px": 2.49,
+        "success_rate": 0.2,
+        "mean_return": -11.91,
+        "competence_status": "Sub-threshold / Near random floor"
+      },
+      "performance": {
+        "elapsed_seconds": 382.87,
+        "steps_per_second": 78.36
+      }
     },
     "svea": {
+      "algorithm": "SVEA",
       "description": "SVEA decoupled loss (critic trained on clean + augmented, actor trained on clean only)",
-      "seeds": [
-        0,
-        1,
-        2
-      ],
-      "alpha": 0.5,
-      "beta": 0.5,
-      "final_eval": [
-        {
-          "seed": 0,
-          "steps": 50000,
-          "success": 0.6,
-          "cle_px": 4.55,
-          "return": -9.47
-        },
-        {
-          "seed": 1,
-          "steps": 50000,
-          "success": 0.8,
-          "cle_px": 4.32,
-          "return": -9.0
-        },
-        {
-          "seed": 2,
-          "steps": 50000,
-          "success": 0.7,
-          "cle_px": 4.2,
-          "return": -8.75
-        }
-      ]
+      "seed": 0,
+      "steps": 30000,
+      "hyperparams": {
+        "batch_size": 128,
+        "learning_rate": 0.0003,
+        "img_resolution": "48x48",
+        "episode_length": 50,
+        "seed_steps": 1000,
+        "std_decay_steps": 15000,
+        "svea_alpha": 0.5,
+        "svea_beta": 0.5,
+        "feature_dim": 50,
+        "hidden": 256
+      },
+      "clean_eval": {
+        "n_episodes": 20,
+        "mean_cle_px": 5.43,
+        "std_cle_px": 2.95,
+        "success_rate": 0.2,
+        "mean_return": -11.3,
+        "competence_status": "Sub-threshold / Near random floor"
+      },
+      "performance": {
+        "elapsed_seconds": 553.21,
+        "steps_per_second": 54.23
+      }
+    },
+    "taco": {
+      "algorithm": "TACO (Temporal Action-Contrastive RL)",
+      "description": "Modern temporal action-contrastive representation learning baseline trained to competence gate",
+      "seed": 0,
+      "steps": 30000,
+      "hyperparams": {
+        "batch_size": 128,
+        "learning_rate": 0.0003,
+        "img_resolution": "48x48",
+        "episode_length": 50,
+        "seed_steps": 1000,
+        "std_decay_steps": 15000,
+        "taco_dim": 50,
+        "taco_weight": 1.0,
+        "taco_temp": 0.1,
+        "feature_dim": 50,
+        "hidden": 256
+      },
+      "clean_eval": {
+        "n_episodes": 20,
+        "mean_cle_px": 4.57,
+        "std_cle_px": 2.96,
+        "success_rate": 0.55,
+        "mean_return": -9.52,
+        "competence_status": "Passes competence gate (<5.0 px)"
+      },
+      "performance": {
+        "elapsed_seconds": 413.41,
+        "steps_per_second": 72.57
+      }
     }
   },
-  "total_eval_episodes": 6600,
-  "shift_kinds": [
-    "background",
-    "noise",
-    "distractor",
-    "viewpoint",
-    "color_gain"
-  ],
-  "severities": [
-    0.0,
-    0.1,
-    0.2,
-    0.3,
-    0.4,
-    0.5,
-    0.6,
-    0.7,
-    0.8,
-    0.9,
-    1.0
-  ],
-  "episodes_per_cell": 20
+  "shift_evaluations": {
+    "shift_kinds": [
+      "background",
+      "noise",
+      "distractor",
+      "viewpoint",
+      "color_gain"
+    ],
+    "severities": [
+      0.0,
+      0.1,
+      0.2,
+      0.3,
+      0.4,
+      0.5,
+      0.6,
+      0.7,
+      0.8,
+      0.9,
+      1.0
+    ],
+    "episodes_per_cell": 20
+  }
 }

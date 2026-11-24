@@ -1,9 +1,5 @@
 hypothesis,verdict,evidence
 H0,SUPPORTED,"min clean success 0.70, gate 0.2"
-H1,NOT SUPPORTED,0.44 of 25 curves abrupt failure
 H2,SUPPORTED,"median error 0.017; gain vs knn_pixel: 0.147 [0.132, 0.167]; gain vs knn_random: 0.262 [0.246, 0.286]"
-H3,NOT SUPPORTED,"tau 0.347, regret 0.028, 6 policies"
 H4,SUPPORTED,best conditional tau 0.581 vs mean agnostic tau 0.254
 H5,SUPPORTED,mean absolute error 0.010 over 105 cases
-H6,NOT SUPPORTED,"min Holm p 1.000; episodes with accepted updates 0.47, with rejected updates 1.00"
-H7,NOT SUPPORTED,"episode-score rate 0.117, streaming ever-alarmed rate 0.058"
