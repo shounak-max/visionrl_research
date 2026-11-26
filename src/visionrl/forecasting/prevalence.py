@@ -14,8 +14,12 @@ def auroc_mixture(q: float, fp: float, fc: float, a: float) -> float:
     AUROC = 1/2 + (a - 1/2) * (pf_c - pn_c) = 1/2 + (a - 1/2) * J(q)
     where J(q) is the Youden index of the oracle regime indicator.
     """
-    pf_c = q * fc / (q * fc + (1 - q) * fp)
-    pn_c = q * (1 - fc) / (q * (1 - fc) + (1 - q) * (1 - fp))
+    den_f = q * fc + (1 - q) * fp
+    den_n = q * (1 - fc) + (1 - q) * (1 - fp)
+    if den_f <= 0.0 or den_n <= 0.0:
+        return float("nan")
+    pf_c = q * fc / den_f
+    pn_c = q * (1 - fc) / den_n
     pf_p, pn_p = 1 - pf_c, 1 - pn_c
     return float(pf_c * pn_p * a + pf_p * pn_c * (1 - a) + 0.5 * (pf_c * pn_c + pf_p * pn_p))
 

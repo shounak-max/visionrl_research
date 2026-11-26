@@ -31,22 +31,26 @@ def test_d_rep_equation():
 
 
 def test_semantic_weighting_equation():
-    """Checks Equation: d_tilde_rep = sum(W_s * ||delta_phi||) / sum(W_s)."""
+    """Checks Equation: f_sem = sum(W_s * phi) / (sum(W_s) + eps)."""
     B, C, H, W = 2, 4, 3, 3
+    torch.manual_seed(0)
     phi_spatial = torch.randn(B, C, H, W)
     phi_spatial_pert = torch.randn(B, C, H, W)
     Ws = torch.rand(B, 1, H, W)
 
     # Equation from paper:
-    diff_norms = torch.norm(phi_spatial - phi_spatial_pert, dim=1, keepdim=True)  # (B, 1, H, W)
-    expected_num = (Ws * diff_norms).sum(dim=(2, 3))
     expected_den = Ws.sum(dim=(2, 3)) + 1e-6
-    expected_weighted = (expected_num / expected_den).squeeze(1)
+    expected_clean = (Ws * phi_spatial).sum(dim=(2, 3)) / expected_den
+    expected_pert = (Ws * phi_spatial_pert).sum(dim=(2, 3)) / expected_den
+    expected_diff = (Ws * (phi_spatial - phi_spatial_pert)).sum(dim=(2, 3)) / expected_den
 
-    # Code semantic_pool output difference:
+    # Code semantic_pool output:
     f_clean = semantic_pool(phi_spatial, Ws)
     f_pert = semantic_pool(phi_spatial_pert, Ws)
     assert f_clean.shape == (B, C)
+    assert torch.allclose(f_clean, expected_clean, atol=1e-6)
+    assert torch.allclose(f_pert, expected_pert, atol=1e-6)
+    assert torch.allclose(f_clean - f_pert, expected_diff, atol=1e-6)
 
 
 def test_grassmann_geodesic_and_projection_equations():

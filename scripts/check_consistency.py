@@ -59,6 +59,10 @@ def run_checks(repo_root: Path) -> tuple[list[str], list[str]]:
         "training_provenance_full.json",
         "hypotheses_verdicts.csv",
         "hypotheses_verdicts.json",
+        "predictor_table_30k.csv",
+        "ranking_table_30k.csv",
+        "per_agent_forecasting_30k.csv",
+        "all_agents_s_star_30k.csv",
     ]
     for rf in req_files:
         p = results_dir / rf
@@ -127,7 +131,7 @@ def run_checks(repo_root: Path) -> tuple[list[str], list[str]]:
         else:
             notes.append(f"Verified engineered metrics contain all 3 target agents: {expected_agents}")
 
-        expected_metrics = ["knn_policy", "maha_policy", "cent_policy", "grassmann_dist", "gcm_drift", "pac_drift_l0", "act_disagree", "q_drop"]
+        expected_metrics = ["knn_policy", "maha_policy", "cent_policy", "grassmann_dist", "gcm_drift", "pac_drift_l0", "pac_drift_l1", "act_disagree", "q_drop"]
         found_metrics = set(df_eng.columns)
         missing_m = [m for m in expected_metrics if m not in found_metrics]
         if missing_m:
@@ -135,11 +139,51 @@ def run_checks(repo_root: Path) -> tuple[list[str], list[str]]:
         else:
             notes.append("Verified all core representation, manifold, and policy sensitivity metrics.")
 
+        shifted_eng = df_eng[df_eng["shift"] != "clean"]
+        if len(shifted_eng) == 0 or not (shifted_eng["pac_drift_l1"] > shifted_eng["pac_drift_l0"]).all():
+            issues.append("engineered_metrics_comparison_30k.csv must have pac_drift_l1 > pac_drift_l0 on all shifted rows.")
+        else:
+            notes.append(f"Verified pac_drift_l1 > pac_drift_l0 across all {len(shifted_eng)} shifted rows.")
+
+    # 6b. Verify 30k Forecasting, Ranking, Per-Agent, and S* Tables
+    pred_csv = results_dir / "predictor_table_30k.csv"
+    if pred_csv.exists():
+        df_pred = pd.read_csv(pred_csv)
+        if len(df_pred) == 0 or "knn_policy" not in set(df_pred["predictor"]):
+            issues.append("predictor_table_30k.csv missing knn_policy or empty.")
+        else:
+            notes.append(f"Verified predictor_table_30k.csv ({len(df_pred)} predictors, n={int(df_pred['n'].iloc[0])}).")
+
+    rank_csv = results_dir / "ranking_table_30k.csv"
+    if rank_csv.exists():
+        df_rank = pd.read_csv(rank_csv)
+        expected_kinds = {"background", "noise", "distractor", "viewpoint", "color_gain"}
+        if not expected_kinds.issubset(set(df_rank["kind"].unique())):
+            issues.append("ranking_table_30k.csv missing shift kinds.")
+        else:
+            notes.append(f"Verified ranking_table_30k.csv ({len(df_rank)} rows across 5 shift kinds).")
+
+    per_ag_csv = results_dir / "per_agent_forecasting_30k.csv"
+    if per_ag_csv.exists():
+        df_pa = pd.read_csv(per_ag_csv)
+        if not {"DrQ-v2", "SVEA", "TACO"}.issubset(set(df_pa["agent"].unique())):
+            issues.append("per_agent_forecasting_30k.csv missing target agents.")
+        else:
+            notes.append(f"Verified per_agent_forecasting_30k.csv ({len(df_pa)} rows).")
+
+    s_star_csv = results_dir / "all_agents_s_star_30k.csv"
+    if s_star_csv.exists():
+        df_ss = pd.read_csv(s_star_csv)
+        if len(df_ss) != 15:
+            issues.append(f"all_agents_s_star_30k.csv expected 15 rows (3 agents x 5 shifts), found {len(df_ss)}.")
+        else:
+            notes.append("Verified all_agents_s_star_30k.csv (15 policy x shift curves).")
+
     # 7. Verify Supported Hypotheses Invariants
     hyp_csv_path = results_dir / "hypotheses_verdicts.csv"
     if hyp_csv_path.exists():
         df_hyp = pd.read_csv(hyp_csv_path)
-        expected_hyp = {"H0", "H2", "H4", "H5"}
+        expected_hyp = {"H0", "H2", "H4"}
         found_hyp = set(df_hyp["hypothesis"].unique())
         if found_hyp != expected_hyp:
             issues.append(f"hypotheses_verdicts.csv must contain exactly supported hypotheses {expected_hyp}, found {found_hyp}")

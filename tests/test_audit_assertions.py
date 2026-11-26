@@ -82,18 +82,21 @@ def test_ttss_trust_region_rejects_bad_update():
 
 
 def test_seed_disjointness():
-    """Assert that train seeds, calibration seeds, and test seeds are distinct sets."""
-    # From standard protocol & phase configs:
-    # Phase 0 config uses seed 42
-    # Standard train / calibration / test splits in visual RL pipeline
-    train_seeds = {42, 43, 44, 45, 46}
-    calibration_seeds = {101, 102, 103}
-    test_seeds = {201, 202, 203, 204, 205}
+    """Assert that config.py SEEDS and seed_for produce disjoint sets across all splits."""
+    from visionrl.config import SEEDS, seed_for
 
-    # Verify disjointness
-    assert train_seeds.isdisjoint(calibration_seeds), "Train and calibration seeds must be disjoint"
-    assert train_seeds.isdisjoint(test_seeds), "Train and test seeds must be disjoint"
-    assert calibration_seeds.isdisjoint(test_seeds), "Calibration and test seeds must be disjoint"
+    split_sets = {}
+    for split in SEEDS:
+        if split == "train":
+            split_sets[split] = {seed_for(split, i, agent_seed=s) for s in range(5) for i in range(500)}
+        else:
+            split_sets[split] = {seed_for(split, i) for i in range(500)}
+
+    splits = list(split_sets.keys())
+    for i in range(len(splits)):
+        for j in range(i + 1, len(splits)):
+            a, b = splits[i], splits[j]
+            assert split_sets[a].isdisjoint(split_sets[b]), f"Seeds for {a} and {b} must be disjoint"
 
 
 def test_adapted_encoder_drives_actions():

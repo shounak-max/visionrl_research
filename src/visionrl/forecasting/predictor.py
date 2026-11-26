@@ -90,14 +90,17 @@ def fit_predict(df: pd.DataFrame, cfg: Cfg, cal: pd.DataFrame, cols: List[str] =
         cal_rows = d.split == "cal"
         test = d.split == "test"
 
-        iso = IsotonicRegression(increasing=True, out_of_bounds="clip", y_min=0, y_max=1).fit(
-            d.loc[cal_rows, z], d.loc[cal_rows, "fail"]
-        )
-        d.loc[test, f"phat_{col}_seed_out"] = iso.predict(d.loc[test, z])
+        valid_cal = cal_rows & d[z].notna() & d["fail"].notna()
+        valid_test = test & d[z].notna()
+        if valid_cal.sum() >= 2 and valid_test.sum() > 0:
+            iso = IsotonicRegression(increasing=True, out_of_bounds="clip", y_min=0, y_max=1).fit(
+                d.loc[valid_cal, z], d.loc[valid_cal, "fail"]
+            )
+            d.loc[valid_test, f"phat_{col}_seed_out"] = iso.predict(d.loc[valid_test, z])
 
         for kind in kinds:
-            tr = cal_rows & (d.kind != kind)
-            te = test & (d.kind == kind)
+            tr = cal_rows & (d.kind != kind) & d[z].notna() & d["fail"].notna()
+            te = test & (d.kind == kind) & d[z].notna()
             if tr.sum() < 2 or te.sum() == 0:
                 continue
             iso = IsotonicRegression(increasing=True, out_of_bounds="clip", y_min=0, y_max=1).fit(

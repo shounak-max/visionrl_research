@@ -2,6 +2,7 @@
 Train a full-scale TACO baseline on Visual Pursuit (continuous control).
 Runs on CUDA to competence (30,000 steps, img=48, ep_len=50).
 Saves:
+- checkpoints/taco_30k_s0.pt
 - results/taco_training_curve.csv
 - results/taco_checkpoint_s0.pt
 - results/taco_summary.json
@@ -23,7 +24,9 @@ from visionrl.experiments.train import train_agent, eval_cell
 from visionrl.environments import make_env
 
 RESULTS_DIR = Path("results")
+CHECKPOINTS_DIR = Path("checkpoints")
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+CHECKPOINTS_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def run():
@@ -56,7 +59,9 @@ def run():
 
     # Save training curve and checkpoint
     curve.to_csv(RESULTS_DIR / "taco_training_curve.csv", index=False)
-    torch.save(agent.state(), RESULTS_DIR / "taco_checkpoint_s0.pt")
+    taco_state = agent.state()
+    torch.save(taco_state, CHECKPOINTS_DIR / "taco_30k_s0.pt")
+    torch.save(taco_state, RESULTS_DIR / "taco_checkpoint_s0.pt")
 
     # Evaluate on clean environment across 20 held-out evaluation seeds
     env = make_env(cfg)
@@ -96,7 +101,13 @@ def run():
         "evaluation_scope": f"Trained on CUDA for {cfg.train_steps} steps. Achieved clean success rate {clean_success_rate:.2f} (mean CLE {mean_clean_cle:.2f} px)."
     }
 
-    with open(RESULTS_DIR / "taco_summary.json", "w") as f:
+    taco_sum_file = RESULTS_DIR / "taco_summary.json"
+    if taco_sum_file.exists():
+        with open(taco_sum_file, "r") as f:
+            existing_taco_summary = json.load(f)
+        if "failure_forecasting_metrics" in existing_taco_summary:
+            summary["failure_forecasting_metrics"] = existing_taco_summary["failure_forecasting_metrics"]
+    with open(taco_sum_file, "w") as f:
         json.dump(summary, f, indent=2)
 
     print("\n" + "=" * 70)
@@ -104,7 +115,7 @@ def run():
     print("=" * 70)
     print(f"Steps: {cfg.train_steps} | Time: {dt:.1f}s ({cfg.train_steps/dt:.1f} steps/s)")
     print(f"Clean Success Rate: {clean_success_rate:.2f} | Clean Mean CLE: {mean_clean_cle:.2f} px")
-    print("Artifacts saved to results/taco_summary.json, results/taco_checkpoint_s0.pt, results/taco_training_curve.csv")
+    print("Artifacts saved to checkpoints/taco_30k_s0.pt, results/taco_summary.json, results/taco_checkpoint_s0.pt, results/taco_training_curve.csv")
 
 
 if __name__ == "__main__":

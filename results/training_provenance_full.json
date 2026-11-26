@@ -17,11 +17,6 @@
       "policies": 1,
       "steps_per_policy": 30000,
       "purpose": "Modern temporal action-contrastive baseline trained to competence gate (<5.0 px CLE)."
-    },
-    "authoritative_benchmark": {
-      "policies": 6,
-      "steps_per_policy": 50000,
-      "purpose": "Historical 6,600-episode empirical evaluation, boundary forecasting, failure prediction, and policy ranking."
     }
   },
   "recipes": {
@@ -48,6 +43,10 @@
         "mean_return": -11.91,
         "competence_status": "Sub-threshold / Near random floor"
       },
+      "performance": {
+        "elapsed_seconds": 382.87,
+        "steps_per_second": 78.36
+      },
       "forecasting_metrics": {
         "knn_policy": {
           "auroc": 0.904,
@@ -73,10 +72,6 @@
           "tau_severity": 0.356,
           "cliff_mae": 0.146
         }
-      },
-      "performance": {
-        "elapsed_seconds": 382.87,
-        "steps_per_second": 78.36
       },
       "critical_severities": {
         "background": {
@@ -141,6 +136,10 @@
         "mean_return": -11.3,
         "competence_status": "Sub-threshold / Near random floor"
       },
+      "performance": {
+        "elapsed_seconds": 553.21,
+        "steps_per_second": 54.23
+      },
       "forecasting_metrics": {
         "knn_policy": {
           "auroc": 0.839,
@@ -166,10 +165,6 @@
           "tau_severity": 0.33,
           "cliff_mae": 0.13
         }
-      },
-      "performance": {
-        "elapsed_seconds": 553.21,
-        "steps_per_second": 54.23
       },
       "critical_severities": {
         "background": {
@@ -235,6 +230,36 @@
         "mean_return": -9.52,
         "competence_status": "Passes competence gate (<5.0 px)"
       },
+      "performance": {
+        "elapsed_seconds": 413.41,
+        "steps_per_second": 72.57
+      },
+      "forecasting_metrics": {
+        "knn_policy": {
+          "auroc": 0.817,
+          "tau_cliff": 1.0,
+          "tau_severity": 0.281,
+          "cliff_mae": 0.018
+        },
+        "act_disagree": {
+          "auroc": 0.838,
+          "tau_cliff": 0.2,
+          "tau_severity": 0.412,
+          "cliff_mae": 0.26
+        },
+        "q_drop": {
+          "auroc": 0.855,
+          "tau_cliff": 0.8,
+          "tau_severity": 0.284,
+          "cliff_mae": 0.094
+        },
+        "pac_drift": {
+          "auroc": 0.853,
+          "tau_cliff": 0.2,
+          "tau_severity": 0.391,
+          "cliff_mae": 0.29
+        }
+      },
       "critical_severities": {
         "background": {
           "s_crit": 0.3,
@@ -271,36 +296,6 @@
           "total_drop": 0.3,
           "min_sr": 0.1
         }
-      },
-      "forecasting_metrics": {
-        "knn_policy": {
-          "auroc": 0.817,
-          "tau_cliff": 1.0,
-          "tau_severity": 0.281,
-          "cliff_mae": 0.018
-        },
-        "act_disagree": {
-          "auroc": 0.838,
-          "tau_cliff": 0.2,
-          "tau_severity": 0.412,
-          "cliff_mae": 0.26
-        },
-        "q_drop": {
-          "auroc": 0.855,
-          "tau_cliff": 0.8,
-          "tau_severity": 0.284,
-          "cliff_mae": 0.094
-        },
-        "pac_drift": {
-          "auroc": 0.853,
-          "tau_cliff": 0.2,
-          "tau_severity": 0.391,
-          "cliff_mae": 0.29
-        }
-      },
-      "performance": {
-        "elapsed_seconds": 413.41,
-        "steps_per_second": 72.57
       }
     }
   },
@@ -325,6 +320,7 @@
       0.9,
       1.0
     ],
-    "episodes_per_cell": 20
+    "clean_eval_split": "eval_curve (20 held-out seeds)",
+    "shift_eval_split": "test (10 held-out seeds per cell)"
   }
 }

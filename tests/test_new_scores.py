@@ -138,9 +138,8 @@ class TestPACDrift:
         shifted = torch.ones_like(clean)  # all-ones vs random
 
         score = scorer.compute(clean, shifted, stub_policy, lambda_val=1.0)
-        # With a non-trivial dz and non-trivial Jacobian, score should be > 0
-        # (unless encoder collapses everything, which our stub won't)
-        assert score >= 0.0, f"PAC-Drift must be non-negative, got {score}"
+        # With a non-trivial dz and non-trivial Jacobian, score must be strictly positive
+        assert score > 0.0, f"PAC-Drift must be > 0 on distinct frames, got {score}"
 
 
 # ---------------------------------------------------------------------------
@@ -237,8 +236,57 @@ class TestRealPolicyIntegration:
         ident_score = scorer.compute(clean, clean, agent)
         assert ident_score < 1e-6, f"Expected near zero, got {ident_score}"
 
-        score = scorer.compute(clean, shifted, agent, lambda_val=1.0)
-        assert score >= 0.0
+        score_l0 = scorer.compute(clean, shifted, agent, lambda_val=0.0)
+        score_l1 = scorer.compute(clean, shifted, agent, lambda_val=1.0)
+        assert score_l0 > 0.0
+        assert score_l1 > score_l0
+
+        # Also verify compute_pac_drift with Actor.policy wrapped in torch.tanh has l1 > l0
+        from visionrl.probes.metrics import compute_pac_drift
+
+        class _TanhPolicy(nn.Module):
+            def __init__(self, pol):
+                super().__init__()
+                self.pol = pol
+
+            def forward(self, z):
+                return torch.tanh(self.pol(z))
+
+        with torch.no_grad():
+            z0 = agent.actor.trunk(agent.encoder(clean))
+            zs = agent.actor.trunk(agent.encoder(shifted))
+        wrapped = _TanhPolicy(agent.actor.policy)
+        pac_l0 = compute_pac_drift(wrapped, z0, zs, lambda_curv=0.0)
+        pac_l1 = compute_pac_drift(wrapped, z0, zs, lambda_curv=1.0)
+        assert np.all(pac_l1 > pac_l0), f"Expected pac_l1 > pac_l0 with tanh, got {pac_l0} vs {pac_l1}"
+
+    def test_encoder_preprocess_obs_hwc(self):
+        """Encoder.preprocess_obs must permute [N, H, W, C] and [H, W, C] to [N, C, H, W]."""
+        from visionrl.models.encoder import Encoder
+
+        enc = Encoder(in_ch=9, img=32)
+        nhwc = torch.randint(0, 256, (2, 32, 32, 9), dtype=torch.uint8)
+        out_4d = enc.preprocess_obs(nhwc)
+        assert out_4d.shape == (2, 9, 32, 32)
+        assert out_4d.dtype == torch.float32
+
+        hwc = torch.randint(0, 256, (32, 32, 9), dtype=torch.uint8)
+        out_3d = enc.preprocess_obs(hwc)
+        assert out_3d.shape == (1, 9, 32, 32)
+        assert out_3d.dtype == torch.float32
+
+        # End-to-end with PACDriftScore on [N, H, W, C]
+        from visionrl.config import make_cfg
+        from visionrl.models.drq_agent import DrQAgent
+
+        cfg = make_cfg("smoke", "pursuit")
+        agent = DrQAgent(cfg, "drqv2", 0)
+        agent.encoder.eval()
+        agent.actor.eval()
+        clean_hwc = torch.rand(2, 32, 32, 9) * 255.0
+        shifted_hwc = torch.rand(2, 32, 32, 9) * 255.0
+        score = PACDriftScore().compute(clean_hwc, shifted_hwc, agent, lambda_val=1.0)
+        assert score > 0.0
 
     def test_gcm_drift_with_drq_v2_policy(self):
         """Test GCM-Drift on full DrQv2 policy architecture."""

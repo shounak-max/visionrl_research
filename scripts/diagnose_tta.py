@@ -81,11 +81,12 @@ def run_tta_diagnosis():
             agent.load(torch.load(ckpt_path, map_location=device, weights_only=False))
             agent.eval()
         else:
-            print(f"\nTraining agent {aid} for {cfg.train_steps} steps on {device}...")
+            print(f"\nTraining fallback diagnostic agent {aid} for {cfg.train_steps} steps on {device}...")
             agent, tr_df = train_agent(cfg, variant=variant, seed=seed, verbose=False)
             agent.eval()
-            torch.save(agent.state(), ckpt_path)
-            print(f"Saved full checkpoint to {ckpt_path}. Final eval: {tr_df.iloc[-1].to_dict() if len(tr_df) else 'N/A'}")
+            diag_ckpt_path = f"checkpoints/{variant}_12k_tta_diag_s{seed}.pt"
+            torch.save(agent.state(), diag_ckpt_path)
+            print(f"Saved fallback diagnostic checkpoint to {diag_ckpt_path}. Final eval: {tr_df.iloc[-1].to_dict() if len(tr_df) else 'N/A'}")
 
         ref_recs = collect_clean(agent, cfg, "ref", cfg.ref_eps, env)
         mu, var, clean_stacks = clean_feature_stats(agent, ref_recs, cfg)

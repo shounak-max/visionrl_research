@@ -13,7 +13,6 @@ import matplotlib.pyplot as plt
 
 RESULTS_DIR = Path("results")
 FIG_DIR = Path("paper") / "figures"
-FIG_DIR.mkdir(parents=True, exist_ok=True)
 
 # Publication styling
 plt.rcParams.update({
@@ -64,6 +63,7 @@ def plot_fig1_conceptual_geometry():
     ax2.legend(loc="upper left")
 
     fig.suptitle("Figure 1: Conceptual Geometry of Policy-Action Manifolds (Illustration, not empirical data)", fontsize=11, style="italic")
+    FIG_DIR.mkdir(parents=True, exist_ok=True)
     plt.tight_layout()
     plt.savefig(FIG_DIR / "fig1_geometry.png")
     plt.savefig(FIG_DIR / "fig1_geometry.pdf")
@@ -71,11 +71,12 @@ def plot_fig1_conceptual_geometry():
     print("Generated fig1_geometry.png and .pdf (labeled as illustration)")
 
 def plot_fig2_forecasting_benchmarks():
-    """Figure 2: Empirical forecasting accuracy across all 9 candidate scores from results/predictor_table.csv."""
-    df_p = pd.read_csv(RESULTS_DIR / "predictor_table.csv")
+    """Figure 2: Empirical forecasting accuracy across candidate scores from results/predictor_table_30k.csv."""
+    df_p = pd.read_csv(RESULTS_DIR / "predictor_table_30k.csv")
     df_p = df_p.sort_values(by="auroc", ascending=True)
+    prevalence = float(df_p["prevalence"].iloc[0])
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4.5))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 5.2))
 
     # Panel A: AUROC and AUPRC
     y_pos = np.arange(len(df_p))
@@ -85,8 +86,8 @@ def plot_fig2_forecasting_benchmarks():
     ax1.set_yticklabels(df_p["predictor"])
     ax1.set_xlabel("Score Value")
     ax1.set_xlim(0.4, 1.0)
-    ax1.axvline(0.592, color="gray", linestyle=":", label="Random Prevalence (0.592)")
-    ax1.set_title("(a) Discrimination Under Strict Holdout (Data: predictor_table.csv)")
+    ax1.axvline(prevalence, color="gray", linestyle=":", label=f"Random Prevalence ({prevalence:.3f})")
+    ax1.set_title("(a) Discrimination Under Strict Holdout (Data: predictor_table_30k.csv)")
     ax1.legend(loc="lower right")
 
     # Panel B: TPR@5%FPR and Clean False Alarm Rate
@@ -96,9 +97,10 @@ def plot_fig2_forecasting_benchmarks():
     ax2.set_yticklabels(df_p["predictor"])
     ax2.set_xlabel("Rate")
     ax2.axvline(0.05, color="red", linestyle="--", label="Nominal Conformal Target (0.05)")
-    ax2.set_title("(b) Operational Detection & Alarm Rates (Data: predictor_table.csv)")
+    ax2.set_title("(b) Operational Detection & Alarm Rates (Data: predictor_table_30k.csv)")
     ax2.legend(loc="lower right")
 
+    FIG_DIR.mkdir(parents=True, exist_ok=True)
     plt.tight_layout()
     plt.savefig(FIG_DIR / "fig2_forecasting_auroc.png")
     plt.savefig(FIG_DIR / "fig2_forecasting_auroc.pdf")
@@ -106,34 +108,38 @@ def plot_fig2_forecasting_benchmarks():
     print("Generated fig2_forecasting_auroc.png and .pdf")
 
 def plot_fig3_cliff_locations():
-    """Figure 3: Critical severity s* distribution and cliffness across shift kinds from results/cliff_table.csv."""
-    df_c = pd.read_csv(RESULTS_DIR / "cliff_table.csv")
+    """Figure 3: Critical severity s* distribution and cliffness across shift kinds from results/all_agents_s_star_30k.csv."""
+    df_c = pd.read_csv(RESULTS_DIR / "all_agents_s_star_30k.csv")
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4.2))
 
     # Panel A: s* by shift family
-    kinds = df_c["kind"].unique()
-    s_crit_by_kind = [df_c[df_c["kind"] == k]["s_crit"].values for k in kinds]
-    
+    kinds = df_c["shift_kind"].unique()
+    s_crit_by_kind = [df_c[df_c["shift_kind"] == k]["s_crit"].values for k in kinds]
+    n_censored = int(df_c["censored"].astype(bool).sum())
+    n_total = len(df_c)
+
     ax1.boxplot(s_crit_by_kind, tick_labels=kinds, patch_artist=True,
                 boxprops=dict(facecolor="#aec7e8", color="#1f77b4"),
                 medianprops=dict(color="darkblue", linewidth=2))
-    ax1.axhline(1.0, color="red", linestyle="--", label="Censored Boundary (s*=1.0, 9/30)")
+    ax1.axhline(1.0, color="red", linestyle="--", label=f"Censored Boundary (s*=1.0, {n_censored}/{n_total})")
     ax1.set_ylabel(r"Critical Severity $s^*$")
-    ax1.set_title(r"(a) Distribution of Critical Severity $s^*$ (Data: cliff_table.csv)")
+    ax1.set_title(r"(a) Distribution of Critical Severity $s^*$ (Data: all_agents_s_star_30k.csv)")
     ax1.legend(loc="upper left")
 
-    # Panel B: Cliffness vs Total Drop (Testing Hypothesis H1)
+    # Panel B: Cliffness vs Total Drop
     for k in kinds:
-        sub = df_c[df_c["kind"] == k]
+        sub = df_c[df_c["shift_kind"] == k]
         ax2.scatter(sub["cliffness"], sub["total_drop"], label=k, s=60, alpha=0.85)
+    n_abrupt = int((df_c["cliffness"] >= 0.5).sum())
     ax2.axvline(0.5, color="black", linestyle=":", label="Abrupt Cliffness Gate (0.5)")
     ax2.axhline(0.3, color="gray", linestyle=":", label="Significant Drop Gate (0.3)")
     ax2.set_xlabel(r"Cliffness Metric ($1/\Delta s$)")
     ax2.set_ylabel("Total Performance Drop")
-    ax2.set_title("(b) Failure Abruptness Check (H1: 11/25 Abrupt Curves)")
+    ax2.set_title(f"(b) Failure Abruptness Check ({n_abrupt}/{n_total} Curves >= 0.5)")
     ax2.legend(loc="lower right")
 
+    FIG_DIR.mkdir(parents=True, exist_ok=True)
     plt.tight_layout()
     plt.savefig(FIG_DIR / "fig3_cliff_locations.png")
     plt.savefig(FIG_DIR / "fig3_cliff_locations.pdf")
@@ -141,22 +147,24 @@ def plot_fig3_cliff_locations():
     print("Generated fig3_cliff_locations.png and .pdf")
 
 def plot_fig4_ranking_and_regret():
-    """Figure 4: Policy ranking Kendall tau vs selection regret from results/ranking_table.csv."""
-    df_r = pd.read_csv(RESULTS_DIR / "ranking_table.csv")
+    """Figure 4: Policy ranking Kendall tau vs selection regret from results/ranking_table_30k.csv."""
+    df_r_raw = pd.read_csv(RESULTS_DIR / "ranking_table_30k.csv")
+    df_r = df_r_raw.groupby("predictor", as_index=False)[["tau", "regret"]].mean().dropna(subset=["tau", "regret"])
 
-    fig, ax = plt.subplots(figsize=(7, 4.8))
-    
-    colors = plt.cm.tab10(np.linspace(0, 1, len(df_r)))
-    for idx, row in df_r.iterrows():
+    fig, ax = plt.subplots(figsize=(7.5, 4.8))
+
+    colors = plt.cm.tab20(np.linspace(0, 1, len(df_r)))
+    for idx, (_, row) in enumerate(df_r.iterrows()):
         ax.scatter(row["tau"], row["regret"], s=100, color=colors[idx], label=row["predictor"], zorder=4)
-        ax.annotate(row["predictor"], (row["tau"], row["regret"]), xytext=(row["tau"]+0.015, row["regret"]+0.001), fontsize=8.5)
+        ax.annotate(row["predictor"], (row["tau"], row["regret"]), xytext=(row["tau"]+0.015, row["regret"]+0.002), fontsize=8)
 
     ax.set_xlabel(r"Policy Ranking Kendall $\tau$ ($\uparrow$ better ranking)")
     ax.set_ylabel(r"Selection Regret (Severity Units, $\downarrow$ lower error)")
-    ax.set_title(r"Policy Ranking Fidelity vs Selection Regret (Data: ranking_table.csv)")
-    ax.axvline(0.60, color="red", linestyle="--", label=r"Pre-registered $H_3$ Gate ($\tau \geq 0.60$)")
-    ax.legend(bbox_to_anchor=(1.04, 1), loc="upper left", fontsize=8.5)
+    ax.set_title(r"Policy Ranking Fidelity vs Selection Regret (Data: ranking_table_30k.csv)")
+    ax.axvline(0.60, color="red", linestyle="--", label=r"Pre-registered Gate ($\tau \geq 0.60$)")
+    ax.legend(bbox_to_anchor=(1.04, 1), loc="upper left", fontsize=8)
 
+    FIG_DIR.mkdir(parents=True, exist_ok=True)
     plt.tight_layout()
     plt.savefig(FIG_DIR / "fig4_ranking_and_regret.png")
     plt.savefig(FIG_DIR / "fig4_ranking_and_regret.pdf")
@@ -164,45 +172,38 @@ def plot_fig4_ranking_and_regret():
     print("Generated fig4_ranking_and_regret.png and .pdf")
 
 def plot_learning_curves():
-    """Figure: Clean return and success learning curves for all 6 agents (50k steps)."""
+    """Figure: Clean tracking error and success learning curves from results/*_training_curve.csv (30k steps)."""
+    curve_files = sorted(RESULTS_DIR.glob("*_training_curve.csv"))
+    if not curve_files:
+        raise FileNotFoundError("No *_training_curve.csv files found in results/")
+
+    label_map = {"drqv2": "DrQ-v2", "svea": "SVEA", "taco": "TACO"}
+    style_map = {"drqv2": "b-", "svea": "g--", "taco": "m-."}
+
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4.2))
 
-    steps = np.linspace(0, 50000, 25)
-    # DrQ-v2 seeds
-    drq_cle = [
-        3.43 + 12.0 * np.exp(-steps / 10000),
-        3.48 + 11.5 * np.exp(-steps / 11000),
-        3.62 + 13.0 * np.exp(-steps / 9500),
-    ]
-    # SVEA seeds
-    svea_cle = [
-        4.55 + 13.5 * np.exp(-steps / 12000),
-        4.32 + 12.5 * np.exp(-steps / 11500),
-        4.20 + 13.0 * np.exp(-steps / 10500),
-    ]
+    for cf in curve_files:
+        df = pd.read_csv(cf)
+        variant = str(df["variant"].iloc[0])
+        label = label_map.get(variant, variant)
+        style = style_map.get(variant, "-")
+        ax1.plot(df["env_steps"], df["mean_cle"], style, alpha=0.85, label=label)
+        ax2.plot(df["env_steps"], df["success"], style, alpha=0.85, label=label)
 
-    for s in range(3):
-        ax1.plot(steps, drq_cle[s], "b-", alpha=0.7, label="DrQ-v2" if s == 0 else "")
-        ax1.plot(steps, svea_cle[s], "g--", alpha=0.7, label="SVEA" if s == 0 else "")
     ax1.axhline(5.0, color="red", linestyle=":", label="Success Threshold (5.0 px)")
     ax1.axhline(22.05, color="gray", linestyle=":", label="Random Floor (22.05 px)")
     ax1.set_xlabel("Environment Steps")
     ax1.set_ylabel("Clean Tracking Error (CLE px)")
-    ax1.set_title("(a) Clean Tracking Error Over 50k Steps")
+    ax1.set_title("(a) Clean Tracking Error Over 30k Steps")
     ax1.legend(loc="upper right")
 
-    # Success rate
-    for s in range(3):
-        drq_succ = 0.80 / (1.0 + np.exp(-(steps - 15000)/5000))
-        svea_succ = 0.70 / (1.0 + np.exp(-(steps - 16000)/5000))
-        ax2.plot(steps, drq_succ, "b-", alpha=0.7, label="DrQ-v2" if s == 0 else "")
-        ax2.plot(steps, svea_succ, "g--", alpha=0.7, label="SVEA" if s == 0 else "")
     ax2.axhline(0.20, color="gray", linestyle=":", label="Pre-training Gate H0 (0.20)")
     ax2.set_xlabel("Environment Steps")
     ax2.set_ylabel("Clean Success Rate")
-    ax2.set_title("(b) Clean Success Rate (Gate: All Agents Pass)")
-    ax2.legend(loc="lower right")
+    ax2.set_title("(b) Clean Success Rate Over 30k Steps")
+    ax2.legend(loc="upper left")
 
+    FIG_DIR.mkdir(parents=True, exist_ok=True)
     plt.tight_layout()
     plt.savefig(FIG_DIR / "fig_learning_curves.png")
     plt.savefig(FIG_DIR / "fig_learning_curves.pdf")

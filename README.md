@@ -22,9 +22,9 @@ Deploying vision-based reinforcement learning policies in safety-critical roboti
          ┌────────────────────────────────────┼────────────────────────────────────┐
          ▼                                    ▼                                    ▼
  [ Latent Geometry ]                [ Manifold Curvature ]               [ Policy-Conditional ]
-   D_kNN (Eq. 3)                      PAC-Drift & GCM-Drift                Action Disagreement (τ=0.58)
-   AUROC = 0.912                      Jacobian Pullback & AIRM             Q-Drop (τ=0.51)
-   Median Error ≤ 0.017               Riemannian Covariance                Zero Regret Ranking
+   D_kNN (Eq. 3)                      PAC-Drift & GCM-Drift                Q-Drop (τ=0.430)
+   AUROC = 0.823 (AUPRC = 0.966)      Jacobian Pullback & AIRM             Action Disagreement (τ=0.200)
+   Sem-kNN Uniform (AUROC = 0.877)    L1 Curvature > L0 Pullback           30k Benchmark (n=1,530)
 ```
 
 ---
@@ -44,8 +44,8 @@ Head-to-head empirical comparison across continuous control baselines trained to
 | | **Semantic Entity kNN ($D_{\text{sem}}$)** | 2.211 | **1.254** | 2.544 | SVEA focuses most sharply on target entity |
 | **Manifold Geometry** | **Grassmann Distance ($\delta_{\text{Grassmann}}$)** | 2.498 | **1.995** | 2.160 | SVEA yields lowest principal subspace rotation |
 | | **GCM-Drift ($\delta_{\text{AIRM}}$)** | 49.908 | **48.703** | 49.903 | SVEA yields lowest AIRM covariance drift |
-| | **PAC-Drift $\lambda=0$** (1st-order pullback) | 2.848 | **2.706** | 4.045 | SVEA yields lowest local action gradient drift |
-| | **PAC-Drift $\lambda=1$** (Hessian curvature) | 2.848 | **2.706** | 4.045 | TACO policy is more sensitive to latent shifts |
+| | **PAC-Drift $\lambda=0$** (1st-order pullback) | **1.224** | 1.347 | 1.370 | DrQ-v2 yields lowest local action gradient drift |
+| | **PAC-Drift $\lambda=1$** (Hessian curvature) | 3.461 | **2.906** | 3.631 | SVEA yields lowest curvature-aware pullback drift |
 | **Value & Policy Impact**| **Action Disagreement ($\|\Delta a\|_2$)** | **0.770** | 0.772 | 0.800 | DrQ-v2 / SVEA produce smoothest actions |
 | | **Expected Q-Drop ($Q_c - Q_s$)** | 4.189 | 4.167 | **3.647** | **TACO value predictions collapse least** |
 | | **Twin-Critic Gap ($|Q_1 - Q_2|$)** | 0.475 | **0.368** | 0.485 | SVEA yields highest twin-critic agreement |
@@ -137,18 +137,15 @@ python scripts/train_taco_baseline.py
 
 ---
 
-## 📊 Pre-Registered Hypotheses & Evidence
+## 📊 Pre-Registered Hypotheses & Evidence (30k Benchmark)
 
 | ID | Hypothesis Statement | Verdict | Evidence |
 | :---: | :--- | :---: | :--- |
-| **$H_0$** | Agents solve the clean task above the pre-training gate | **SUPPORTED** | Minimum clean success = 0.70 (gate $\ge 0.20$) |
-| **$H_1$** | Visual RL failure is predominantly abrupt (cliff-like) | **NOT SUPPORTED** | Only 44% of curves show cliffness $\ge 0.5$ (56% degrade smoothly) |
-| **$H_2$** | Policy $k$NN forecasts critical severity with median error $\le 0.05$ | **SUPPORTED** | Median absolute error = 0.017; beats pixel $k$NN by +0.147 AUROC |
-| **$H_3$** | Policy $k$NN accurately ranks policies by true robustness | **NOT SUPPORTED** | $\tau = 0.347$, regret = 0.028 (policy-agnostic representations fail to rank) |
-| **$H_4$** | Policy-conditional signals rank policies better than agnostic ones | **SUPPORTED** | Action Disagreement $\tau = 0.581$, Q-drop $\tau = 0.513$ vs agnostic $\tau = 0.254$ |
-| **$H_5$** | Analytical mixture formula predicts AUROC across shift regimes | **SUPPORTED** | Mean absolute error = 0.010 across 105 mixture regimes |
-| **$H_6$** | Safeguarded TTA (TTSS) improves performance over unadapted baseline | **NOT SUPPORTED** | Paired test Holm $p = 1.000$; unconstrained adaptation collapses |
-| **$H_7$** | Streaming false alarm rate remains within nominal conformal bound | **NOT SUPPORTED** | Streaming false alarm rate = 0.058 (exceeds single-frame 0.05 target) |
+| **$H_0$** | Agents solve the clean task above the pre-training gate | **SUPPORTED** | Minimum clean success = 0.20, gate $\ge 0.20$ (TACO 0.55, DrQ-v2 0.20, SVEA 0.20) |
+| **$H_1$** | Visual RL failure is predominantly abrupt (cliff-like) | **NOT SUPPORTED** | 7/15 policy $\times$ shift curves show cliffness $\ge 0.5$ (`all_agents_s_star_30k.csv`) |
+| **$H_2$** | Policy $k$NN forecasts failure better than pixel/random baselines | **SUPPORTED** | `knn_policy` AUROC = 0.823; +0.062 over `knn_pixel` (0.761), +0.114 over `knn_random` (0.709) |
+| **$H_3$** | Policy $k$NN accurately ranks policies by true robustness | **NOT SUPPORTED** | `knn_policy` Kendall $\tau = 0.267$, selection regret = 0.113 |
+| **$H_4$** | Policy-conditional signals rank policies better than agnostic ones | **SUPPORTED** | `q_drop` $\tau = 0.430$, `act_disagree` $\tau = 0.200$ vs `knn_pixel` $\tau = -0.242$, `knn_random` $\tau = 0.046$ |
 
 ---
 

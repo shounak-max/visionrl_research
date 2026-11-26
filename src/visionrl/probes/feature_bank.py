@@ -27,9 +27,12 @@ class FeatureBank:
         device = get_device()
         self.device = device
         st = torch.get_rng_state()
+        cuda_st = torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None
         torch.manual_seed(123)
         self.rand_enc = Encoder(3 * cfg.n_stack, cfg.img).to(device).eval()   # untrained control encoder
         torch.set_rng_state(st)
+        if cuda_st is not None:
+            torch.cuda.set_rng_state_all(cuda_st)
 
     @torch.no_grad()
     def extract(self, stacks_u8: np.ndarray, masks: np.ndarray, bs: int = 64) -> Dict[str, np.ndarray]:
@@ -122,7 +125,20 @@ def score_episode(
     knn_pol = ref.knn("policy", fs["policy"], k)
 
     # Novel Extension: Policy-Action Curvature Drift (PAC-Drift)
-    policy_submodule = bank.agent.actor.policy if hasattr(bank.agent.actor, "policy") else bank.agent.actor
+    if hasattr(bank.agent.actor, "policy"):
+        _raw_policy = bank.agent.actor.policy
+
+        class _TanhPolicy(torch.nn.Module):
+            def __init__(self, policy: torch.nn.Module):
+                super().__init__()
+                self.policy = policy
+
+            def forward(self, z: torch.Tensor) -> torch.Tensor:
+                return torch.tanh(self.policy(z))
+
+        policy_submodule = _TanhPolicy(_raw_policy)
+    else:
+        policy_submodule = bank.agent.actor
     pac_scores_l0 = compute_pac_drift(
         policy_submodule,
         fc["policy"][idx],

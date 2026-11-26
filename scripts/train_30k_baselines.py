@@ -77,12 +77,15 @@ def train_and_eval_30k():
         with open(taco_summary_path, "r") as f:
             taco_data = json.load(f)
         all_30k_results["taco_s0"] = {
-            "algorithm": "TACO (Temporal Action-Contrastive RL)",
+            "algorithm": "TACO",
             "variant": "taco",
             "seed": 0,
-            "train_steps": 30000,
+            "training_steps": 30000,
+            "n_eval_episodes": taco_data.get("evaluation_clean", {}).get("n_episodes", 20),
             "clean_mean_cle_px": taco_data.get("evaluation_clean", {}).get("mean_cle_px", 4.57),
             "clean_success_rate": taco_data.get("evaluation_clean", {}).get("success_rate", 0.55),
+            "random_floor_cle_px": 22.05,
+            "target_threshold_px": 5.0,
             "competence_status": taco_data.get("evaluation_clean", {}).get("tracking_competence", "Passes competence gate (<5.0 px)"),
             "steps_per_second": taco_data.get("steps_per_second", 72.57),
             "elapsed_seconds": taco_data.get("elapsed_seconds", 413.41),
@@ -103,11 +106,13 @@ def train_and_eval_30k():
         curve.to_csv(curve_file, index=False)
         print(f"Saved training curve to {curve_file}")
 
-        # Save full agent checkpoint
+        # Save full agent checkpoint to both checkpoints/ and results/
         state_dict = agent.state()
+        ckpt_path = CHECKPOINTS_DIR / f"{variant}_30k_s{seed}.pt"
         res_ckpt_path = RESULTS_DIR / f"{variant}_30k_checkpoint_s{seed}.pt"
+        torch.save(state_dict, ckpt_path)
         torch.save(state_dict, res_ckpt_path)
-        print(f"Saved full checkpoint to {res_ckpt_path} (size: {os.path.getsize(res_ckpt_path):,} bytes)")
+        print(f"Saved full checkpoints to {ckpt_path} and {res_ckpt_path} (size: {os.path.getsize(ckpt_path):,} bytes)")
 
         # Verify load round-trip
         test_agent = DrQAgent(cfg, variant=variant, seed=seed)
@@ -161,6 +166,11 @@ def train_and_eval_30k():
         }
 
         sum_file = RESULTS_DIR / f"{variant}_30k_summary.json"
+        if sum_file.exists():
+            with open(sum_file, "r") as f:
+                existing_summary = json.load(f)
+            if "failure_forecasting_metrics" in existing_summary:
+                summary["failure_forecasting_metrics"] = existing_summary["failure_forecasting_metrics"]
         with open(sum_file, "w") as f:
             json.dump(summary, f, indent=2)
 
@@ -168,11 +178,14 @@ def train_and_eval_30k():
             "algorithm": summary["algorithm"],
             "variant": variant,
             "seed": seed,
-            "train_steps": 30000,
+            "training_steps": 30000,
+            "n_eval_episodes": len(ev_results),
             "clean_mean_cle_px": round(mean_cle, 2),
             "clean_cle_std_px": round(std_cle, 2),
             "clean_success_rate": round(succ_rate, 2),
             "mean_return": round(mean_ret, 2),
+            "random_floor_cle_px": 22.05,
+            "target_threshold_px": 5.0,
             "competence_status": status,
             "steps_per_second": sps,
             "elapsed_seconds": round(dt, 2),

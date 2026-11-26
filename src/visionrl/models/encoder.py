@@ -26,6 +26,7 @@ class Encoder(nn.Module):
 
     def __init__(self, in_ch: int, img: int):
         super().__init__()
+        self.in_ch = in_ch
         self.convs = nn.Sequential(
             nn.Conv2d(in_ch, 32, 3, stride=2),
             nn.ReLU(),
@@ -53,6 +54,14 @@ class Encoder(nn.Module):
         return self(obs)
 
     def preprocess_obs(self, obs: torch.Tensor) -> torch.Tensor:
-        """Ensure input tensor is on correct device and dtype."""
+        """Ensure input tensor is on correct device/dtype and in [N, C, H, W] layout."""
         device = next(self.parameters()).device
-        return torch.as_tensor(obs, dtype=torch.float32, device=device)
+        t = torch.as_tensor(obs, dtype=torch.float32, device=device)
+        if t.ndim == 3:
+            if t.shape[-1] in (1, 3, self.in_ch) and t.shape[0] != self.in_ch:
+                t = t.permute(2, 0, 1)
+            t = t.unsqueeze(0)
+        elif t.ndim == 4:
+            if t.shape[-1] in (1, 3, self.in_ch) and t.shape[1] != self.in_ch:
+                t = t.permute(0, 3, 1, 2)
+        return t

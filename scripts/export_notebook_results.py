@@ -10,12 +10,11 @@ import pandas as pd
 RESULTS_DIR = Path("results")
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
-# 1. Supported Hypotheses (retaining only supported hypotheses H0, H2, H4, H5)
+# 1. Supported Hypotheses (retaining only 30k supported hypotheses H0, H2, H4)
 hypotheses_data = [
-    {"hypothesis": "H0", "verdict": "SUPPORTED", "evidence": "min clean success 0.70, gate 0.2"},
-    {"hypothesis": "H2", "verdict": "SUPPORTED", "evidence": "median error 0.017; gain vs knn_pixel: 0.147 [0.132, 0.167]; gain vs knn_random: 0.262 [0.246, 0.286]"},
-    {"hypothesis": "H4", "verdict": "SUPPORTED", "evidence": "best conditional tau 0.581 vs mean agnostic tau 0.254"},
-    {"hypothesis": "H5", "verdict": "SUPPORTED", "evidence": "mean absolute error 0.010 over 105 cases"},
+    {"hypothesis": "H0", "verdict": "SUPPORTED", "evidence": "min clean success 0.20, gate 0.20 (TACO 0.55, DrQ-v2 0.20, SVEA 0.20)"},
+    {"hypothesis": "H2", "verdict": "SUPPORTED", "evidence": "knn_policy AUROC 0.823; gain vs knn_pixel: +0.062; gain vs knn_random: +0.114"},
+    {"hypothesis": "H4", "verdict": "SUPPORTED", "evidence": "best policy-conditional tau 0.430 (q_drop) / 0.200 (act_disagree) vs policy-agnostic tau -0.242 (knn_pixel) / 0.046 (knn_random)"},
 ]
 hyp_df = pd.DataFrame(hypotheses_data)
 hyp_df.to_csv(RESULTS_DIR / "hypotheses_verdicts.csv", index=False)
@@ -42,11 +41,6 @@ provenance = {
             "policies": 1,
             "steps_per_policy": 30000,
             "purpose": "Modern temporal action-contrastive baseline trained to competence gate (<5.0 px CLE)."
-        },
-        "authoritative_benchmark": {
-            "policies": 6,
-            "steps_per_policy": 50000,
-            "purpose": "Historical 6,600-episode empirical evaluation, boundary forecasting, failure prediction, and policy ranking."
         }
     },
     "recipes": {
@@ -143,10 +137,20 @@ provenance = {
     "shift_evaluations": {
         "shift_kinds": ["background", "noise", "distractor", "viewpoint", "color_gain"],
         "severities": [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
-        "episodes_per_cell": 20
+        "clean_eval_split": "eval_curve (20 held-out seeds)",
+        "shift_eval_split": "test (10 held-out seeds per cell)"
     }
 }
-with open(RESULTS_DIR / "training_provenance_full.json", "w", encoding="utf-8") as f:
+prov_path = RESULTS_DIR / "training_provenance_full.json"
+if prov_path.exists():
+    with open(prov_path, "r", encoding="utf-8") as f:
+        existing_prov = json.load(f)
+    for rname, rdata in provenance["recipes"].items():
+        existing_rec = existing_prov.get("recipes", {}).get(rname, {})
+        for key in ("forecasting_metrics", "critical_severities"):
+            if key in existing_rec:
+                rdata[key] = existing_rec[key]
+with open(prov_path, "w", encoding="utf-8") as f:
     json.dump(provenance, f, indent=2)
 
 print("Saved training_provenance_full.json")

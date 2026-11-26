@@ -1,5 +1,4 @@
 hypothesis,verdict,evidence
-H0,SUPPORTED,"min clean success 0.70, gate 0.2"
-H2,SUPPORTED,"median error 0.017; gain vs knn_pixel: 0.147 [0.132, 0.167]; gain vs knn_random: 0.262 [0.246, 0.286]"
-H4,SUPPORTED,best conditional tau 0.581 vs mean agnostic tau 0.254
-H5,SUPPORTED,mean absolute error 0.010 over 105 cases
+H0,SUPPORTED,"min clean success 0.20, gate 0.20 (TACO 0.55, DrQ-v2 0.20, SVEA 0.20)"
+H2,SUPPORTED,knn_policy AUROC 0.823; gain vs knn_pixel: +0.062; gain vs knn_random: +0.114
+H4,SUPPORTED,best policy-conditional tau 0.430 (q_drop) / 0.200 (act_disagree) vs policy-agnostic tau -0.242 (knn_pixel) / 0.046 (knn_random)

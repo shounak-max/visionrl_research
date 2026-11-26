@@ -76,10 +76,6 @@ def run_pipeline(
         cfg = replace(cfg, **{k: (tuple(v) if isinstance(v, list) else v) for k, v in env_ov.items()})
         print("Overrides applied:", env_ov)
 
-    # Bug 5 Fix: Ensure tta_lr is appropriately scaled in non-smoke modes
-    if cfg.mode != "smoke" and cfg.tta_lr < 1e-3:
-        cfg = replace(cfg, tta_lr=1e-3)
-
     device = get_device()
     torch.set_num_threads(max(1, min(4, os.cpu_count() or 1)))
     print(f"\n[VisionRL Pipeline] Mode: {cfg.mode} | Env: {cfg.env} | Device: {device} | Output: {out_dir}")
