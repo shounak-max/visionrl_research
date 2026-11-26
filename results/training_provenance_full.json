@@ -49,14 +49,71 @@
         "competence_status": "Sub-threshold / Near random floor"
       },
       "forecasting_metrics": {
-        "knn_policy": { "auroc": 0.904, "tau_cliff": 0.527, "tau_severity": 0.273, "cliff_mae": 0.234 },
-        "act_disagree": { "auroc": 0.836, "tau_cliff": 0.949, "tau_severity": 0.356, "cliff_mae": 0.066 },
-        "q_drop": { "auroc": 0.834, "tau_cliff": 0.527, "tau_severity": 0.242, "cliff_mae": 0.199 },
-        "pac_drift": { "auroc": 0.868, "tau_cliff": 0.527, "tau_severity": 0.356, "cliff_mae": 0.146 }
+        "knn_policy": {
+          "auroc": 0.904,
+          "tau_cliff": 0.527,
+          "tau_severity": 0.273,
+          "cliff_mae": 0.234
+        },
+        "act_disagree": {
+          "auroc": 0.836,
+          "tau_cliff": 0.949,
+          "tau_severity": 0.356,
+          "cliff_mae": 0.066
+        },
+        "q_drop": {
+          "auroc": 0.834,
+          "tau_cliff": 0.527,
+          "tau_severity": 0.242,
+          "cliff_mae": 0.199
+        },
+        "pac_drift": {
+          "auroc": 0.868,
+          "tau_cliff": 0.527,
+          "tau_severity": 0.356,
+          "cliff_mae": 0.146
+        }
       },
       "performance": {
         "elapsed_seconds": 382.87,
         "steps_per_second": 78.36
+      },
+      "critical_severities": {
+        "background": {
+          "s_crit": 0.1,
+          "censored": false,
+          "cliffness": 0.5,
+          "total_drop": 0.2,
+          "min_sr": 0.0
+        },
+        "noise": {
+          "s_crit": 0.05,
+          "censored": false,
+          "cliffness": 1.0,
+          "total_drop": 0.2,
+          "min_sr": 0.0
+        },
+        "distractor": {
+          "s_crit": 0.15,
+          "censored": false,
+          "cliffness": 1.0,
+          "total_drop": 0.2,
+          "min_sr": 0.0
+        },
+        "viewpoint": {
+          "s_crit": 0.4,
+          "censored": false,
+          "cliffness": 0.3333,
+          "total_drop": 0.15,
+          "min_sr": 0.05
+        },
+        "color_gain": {
+          "s_crit": 0.5,
+          "censored": false,
+          "cliffness": 0.6667,
+          "total_drop": 0.15,
+          "min_sr": 0.05
+        }
       }
     },
     "svea": {
@@ -85,14 +142,71 @@
         "competence_status": "Sub-threshold / Near random floor"
       },
       "forecasting_metrics": {
-        "knn_policy": { "auroc": 0.839, "tau_cliff": 0.889, "tau_severity": 0.147, "cliff_mae": 0.275 },
-        "act_disagree": { "auroc": 0.861, "tau_cliff": 0.527, "tau_severity": 0.305, "cliff_mae": 0.194 },
-        "q_drop": { "auroc": 0.632, "tau_cliff": 0.889, "tau_severity": 0.112, "cliff_mae": 0.194 },
-        "pac_drift": { "auroc": 0.860, "tau_cliff": 0.738, "tau_severity": 0.330, "cliff_mae": 0.130 }
+        "knn_policy": {
+          "auroc": 0.839,
+          "tau_cliff": 0.889,
+          "tau_severity": 0.147,
+          "cliff_mae": 0.275
+        },
+        "act_disagree": {
+          "auroc": 0.861,
+          "tau_cliff": 0.527,
+          "tau_severity": 0.305,
+          "cliff_mae": 0.194
+        },
+        "q_drop": {
+          "auroc": 0.632,
+          "tau_cliff": 0.889,
+          "tau_severity": 0.112,
+          "cliff_mae": 0.194
+        },
+        "pac_drift": {
+          "auroc": 0.86,
+          "tau_cliff": 0.738,
+          "tau_severity": 0.33,
+          "cliff_mae": 0.13
+        }
       },
       "performance": {
         "elapsed_seconds": 553.21,
         "steps_per_second": 54.23
+      },
+      "critical_severities": {
+        "background": {
+          "s_crit": 0.25,
+          "censored": false,
+          "cliffness": 0.6667,
+          "total_drop": 0.15,
+          "min_sr": 0.05
+        },
+        "noise": {
+          "s_crit": 0.05,
+          "censored": false,
+          "cliffness": 1.0,
+          "total_drop": 0.2,
+          "min_sr": 0.0
+        },
+        "distractor": {
+          "s_crit": 0.15,
+          "censored": false,
+          "cliffness": 1.0,
+          "total_drop": 0.2,
+          "min_sr": 0.0
+        },
+        "viewpoint": {
+          "s_crit": 0.25,
+          "censored": false,
+          "cliffness": 0.5,
+          "total_drop": 0.2,
+          "min_sr": 0.0
+        },
+        "color_gain": {
+          "s_crit": 1.0,
+          "censored": false,
+          "cliffness": 1.0,
+          "total_drop": 0.1,
+          "min_sr": 0.1
+        }
       }
     },
     "taco": {
@@ -122,17 +236,67 @@
         "competence_status": "Passes competence gate (<5.0 px)"
       },
       "critical_severities": {
-        "background": { "s_crit": 0.31, "censored": false, "cliffness": 0.455, "total_drop": 0.55, "min_sr": 0.0 },
-        "noise": { "s_crit": 0.1214, "censored": false, "cliffness": 0.636, "total_drop": 0.55, "min_sr": 0.0 },
-        "distractor": { "s_crit": 0.2167, "censored": false, "cliffness": 0.455, "total_drop": 0.55, "min_sr": 0.0 },
-        "viewpoint": { "s_crit": 1.0, "censored": true, "cliffness": 0.5, "total_drop": 0.1, "min_sr": 0.45 },
-        "color_gain": { "s_crit": 0.4917, "censored": false, "cliffness": 0.75, "total_drop": 0.4, "min_sr": 0.15 }
+        "background": {
+          "s_crit": 0.3,
+          "censored": false,
+          "cliffness": 0.25,
+          "total_drop": 0.4,
+          "min_sr": 0.0
+        },
+        "noise": {
+          "s_crit": 0.1,
+          "censored": false,
+          "cliffness": 0.5,
+          "total_drop": 0.4,
+          "min_sr": 0.0
+        },
+        "distractor": {
+          "s_crit": 0.18,
+          "censored": false,
+          "cliffness": 0.625,
+          "total_drop": 0.4,
+          "min_sr": 0.0
+        },
+        "viewpoint": {
+          "s_crit": 1.0,
+          "censored": false,
+          "cliffness": 0.25,
+          "total_drop": 0.2,
+          "min_sr": 0.2
+        },
+        "color_gain": {
+          "s_crit": 0.7,
+          "censored": false,
+          "cliffness": 0.3333,
+          "total_drop": 0.3,
+          "min_sr": 0.1
+        }
       },
       "forecasting_metrics": {
-        "knn_policy": { "auroc": 0.817, "tau_cliff": 1.000, "tau_severity": 0.281, "cliff_mae": 0.018 },
-        "act_disagree": { "auroc": 0.838, "tau_cliff": 0.200, "tau_severity": 0.412, "cliff_mae": 0.260 },
-        "q_drop": { "auroc": 0.855, "tau_cliff": 0.800, "tau_severity": 0.284, "cliff_mae": 0.094 },
-        "pac_drift": { "auroc": 0.853, "tau_cliff": 0.200, "tau_severity": 0.391, "cliff_mae": 0.290 }
+        "knn_policy": {
+          "auroc": 0.817,
+          "tau_cliff": 1.0,
+          "tau_severity": 0.281,
+          "cliff_mae": 0.018
+        },
+        "act_disagree": {
+          "auroc": 0.838,
+          "tau_cliff": 0.2,
+          "tau_severity": 0.412,
+          "cliff_mae": 0.26
+        },
+        "q_drop": {
+          "auroc": 0.855,
+          "tau_cliff": 0.8,
+          "tau_severity": 0.284,
+          "cliff_mae": 0.094
+        },
+        "pac_drift": {
+          "auroc": 0.853,
+          "tau_cliff": 0.2,
+          "tau_severity": 0.391,
+          "cliff_mae": 0.29
+        }
       },
       "performance": {
         "elapsed_seconds": 413.41,

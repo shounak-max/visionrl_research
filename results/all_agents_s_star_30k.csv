@@ -1,0 +1,16 @@
+agent,variant,shift_kind,clean_sr,halving_threshold,s_crit,censored,cliffness,total_drop,min_sr,clean_cle_px,max_cle_px
+DrQ-v2,drqv2,background,0.2,0.1,0.1,False,0.5,0.2,0.0,5.32,29.15
+DrQ-v2,drqv2,noise,0.2,0.1,0.05,False,1.0,0.2,0.0,5.32,29.13
+DrQ-v2,drqv2,distractor,0.2,0.1,0.15,False,1.0,0.2,0.0,5.32,18.87
+DrQ-v2,drqv2,viewpoint,0.2,0.1,0.4,False,0.3333,0.15,0.05,5.32,8.7
+DrQ-v2,drqv2,color_gain,0.2,0.1,0.5,False,0.6667,0.15,0.05,5.32,11.86
+SVEA,svea,background,0.2,0.1,0.25,False,0.6667,0.15,0.05,6.19,15.76
+SVEA,svea,noise,0.2,0.1,0.05,False,1.0,0.2,0.0,6.19,28.08
+SVEA,svea,distractor,0.2,0.1,0.15,False,1.0,0.2,0.0,6.19,17.17
+SVEA,svea,viewpoint,0.2,0.1,0.25,False,0.5,0.2,0.0,6.19,7.42
+SVEA,svea,color_gain,0.2,0.1,1.0,False,1.0,0.1,0.1,6.19,8.68
+TACO,taco,background,0.4,0.2,0.3,False,0.25,0.4,0.0,4.15,28.49
+TACO,taco,noise,0.4,0.2,0.1,False,0.5,0.4,0.0,4.15,24.6
+TACO,taco,distractor,0.4,0.2,0.18,False,0.625,0.4,0.0,4.15,18.99
+TACO,taco,viewpoint,0.4,0.2,1.0,False,0.25,0.2,0.2,4.15,7.36
+TACO,taco,color_gain,0.4,0.2,0.7,False,0.3333,0.3,0.1,4.15,15.6
